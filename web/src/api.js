@@ -1,7 +1,7 @@
-import axious from 'axios';
+import axios from 'axios';
 import { ACCESS_TOKEN, REFRESH_TOKEN } from './constants';
 
-const api = axious.create({
+const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL
 })
 
