@@ -38,7 +38,7 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
-    ], 
+    ],
 } #configuration for JWT tokens to work properly
 
 SIMPLE_JWT = {
@@ -56,8 +56,10 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     'rest_framework',
-    'api',
     'corsheaders',
+
+    'user',
+    'notes',
 ]
 
 MIDDLEWARE = [
