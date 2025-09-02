@@ -7,32 +7,47 @@
 DJango | [Link](https://docs.djangoproject.com/en/5.2/topics/db/models/) | **Backend framework**. Manages databases (users, products, posts, etc.). Handles authentication, APIs (usually REST or GraphQL). Decides what data should be sent to the frontend.
 React.js | [Link](https://react.dev/reference/react-dom/components/common) | **Frontend framework**. Renders components (buttons, forms, dashboards, etc.). Updates the page dynamically without reloading (Single Page Application). Talks to Django via APIs using axios.
 Vite | [Link](https://vite.dev/guide/cli.html) | **Front end build tool**. Runs a fast dev server so you can see changes instantly.Compiles JSX/TSX into browser-ready JavaScript. Optimizes files for production (minification, bundling).
-Tailwind | [Link](https://tailwindcss.com/docs/styling-with-utility-classes) | **Styling framework**. Provides utility classes like flex, bg-blue-500, p-4 instead of writing custom CSS. Makes it easier to build responsive, consistent designs.
 
-## Installation Guide (Windows)
-1. **Ensure python 3.13, pip, npm 11+ and node 22+ is installed**
-    ```bash
-    python --version
-    pip --version
-    node --version
-    npm --version
-    ```
-    Install missing libraries
+## Installation Guide
+1. **Ensure Python 3.13, PIP, PostgreSQL, NPM 11+ and Node 22+ is installed**
+    Install missing libraries\
+    [Node installer](https://nodejs.org/en/download/)\
+    [Python installer](https://www.python.org/downloads/)\
+    [PostgreSQL installer](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads)
 
-2. **Install environment**
+2. **Install environment and checking environment**\
+    Windows:
     ```bash
-    python -m venv venv
-    venv\Scripts\activate
+    python -m venv .venv
+    .venv\Scripts\activate.bat
+
+    Get-Command python
     ```
+    MacOS:
+    ```bash
+    python -m venv .venv
+    source .venv\bin\activate
+
+    which python
+    ```
+    Make sure it shows that the python binary points to venv inside of he project.
 
 3. **Install backend dependencies**
     ```bash
+    cd backend
     pip install -r requirements.txt
+    ```
+
+4. **Setup PostgreSQL**
+    ```bash
+    psql -U postgres
+    CREATE DATABASE prolingo;
+    exit
     ```
 
 4. **Setup DJango**
     ```bash
-    cd backend
+    python manage.py makemigrations
     python manage.py migrate
     python manage.py runserver
     ```
@@ -40,47 +55,93 @@ Tailwind | [Link](https://tailwindcss.com/docs/styling-with-utility-classes) | *
 
 5. **Setup Frontend**
     ```bash
-    cd ..\web
+    cd web
     npm install
     npm run dev
     ```
-Installation for MacOS
+    The frontend now runs at http://localhost:5173/
 
-## Installation Guide (macOS)
-1. **Ensure Python 3.13, pip, Node 22+ and npm 11+ are installed**
-    ```bash
-    python3 --version
-    pip3 --version
-    node --version
-    npm --version
-    ```
-    Install missing dependencies:
-    - [Python downloads](https://www.python.org/downloads/macos/)
-    - [Node.js downloads](https://nodejs.org/)
+## DJango App Creation Guide
 
-2. **Create virtual environment**
-    ```bash
-    python3 -m venv venv
-    source venv/bin/activate
-    ```
+1. **Create folder**\
+    Create a folder named after the app.
 
-3. **Install backend dependencies**
-    ```bash
-    pip3 install -r requirements.txt
-    ```
+2. **Create the app**\
+    Create `apps.py` and paste the following code:
+    ```py
+    from django.apps import AppConfig
 
-4. **Setup Django**
-    ```bash
-    cd backend
-    python3 manage.py migrate
-    python3 manage.py runserver
+    class <APP_NAME>Config(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "<APP_NAME>"
     ```
-    The backend now runs at [http://127.0.0.1:8000](http://127.0.0.1:8000)
+    Replace `<APP_NAME>` with the app name
 
-5. **Setup Frontend**
-    ```bash
-    cd ../web
-    npm install
-    npm run dev
+3. **Create model**\
+    Create `models.py` inside the app folder
+
+    ```py
+    from django.db import models
+
+    class <APP_NAME>(models.Model):
+        name = models.CharField(max_length=255)
+
+        def __str__(self):
+            return self.name
     ```
-    The frontend now runs at [http://127.0.0.1:5173](http://127.0.0.1:5173) (default Vite port)
+    Replace `<APP_NAME>` with the app name
+
+4. **Create views.py**
+    Create `views.py` inside the app folder:
+    ```py
+    from rest_framework import viewsets
+    from .models import <APP_NAME>
+    from .serializers import <APP_NAME>Serializer
+
+    class <APP_NAME>ViewSet(viewsets.ModelViewSet):
+        queryset = <APP_NAME>.objects.all()
+        serializer_class = <APP_NAME>Serializer
+    ```
+    Replace `<APP_NAME>` with the app name.
+
+5. **Create serializers.py**
+    Create `serializers.py` inside the app folder:
+    ```py
+    from rest_framework import serializers
+    from .models import <APP_NAME>
+
+    class <APP_NAME>Serializer(serializers.ModelSerializer):
+        class Meta:
+            model = <APP_NAME>
+            fields = '__all__'
+    ```
+    Replace `<APP_NAME>` with the app name.
+
+6. **Create urls.py**
+    Create `urls.py` inside the app folder:
+    ```py
+    from django.urls import path, include
+    from rest_framework.routers import DefaultRouter
+    from .views import <APP_NAME>ViewSet
+
+    router = DefaultRouter()
+    router.register(r'<app_name>', <APP_NAME>ViewSet)
+
+    urlpatterns = [
+        path('', include(router.urls)),
+    ]
+    ```
+    Replace `<APP_NAME>` and `<app_name>` with the app name.
+
+7. **Include app URLs in project urls.py**
+    In your main `urls.py`, add:
+    ```py
+    path('<app_name>/', include('<APP_NAME>.urls')),
+    ```
+    Replace `<APP_NAME>` and `<app_name>` with the app name.
+8. **Run migrations**
+    ```bash
+    python manage.py makemigrations <APP_NAME>
+    python manage.py migrate
+    ```
+    Replace `<APP_NAME>` with the app name.
