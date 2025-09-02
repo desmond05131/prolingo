@@ -142,6 +142,6 @@ Vite | [Link](https://vite.dev/guide/cli.html) | **Front end build tool**. Runs 
 8. **Run migrations**
     ```bash
     python manage.py makemigrations <APP_NAME>
-    python manage.py migration
+    python manage.py migrate
     ```
     Replace `<APP_NAME>` with the app name.
