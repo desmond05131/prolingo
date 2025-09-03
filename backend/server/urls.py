@@ -4,6 +4,7 @@ from rest_framework.routers import DefaultRouter
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from django.http import HttpResponse
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -14,4 +15,5 @@ urlpatterns = [
 
     path("api/users/", include("users.urls")),
     path("api/notes/", include("notes.urls")),
+    path("", lambda request: HttpResponse("Welcome to Prolingo API"), name="home"),
 ]

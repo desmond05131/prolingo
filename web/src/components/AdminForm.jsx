@@ -2,14 +2,16 @@ import { useState } from "react";
 import api from "../api";
 import { useNavigate } from "react-router-dom";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
-import "../styles/Form.css";
+import "../styles/AdminForm.css";
 import LoadingIndicator from "./LoadingIndicator";
 
 function Form({ route, method }) {
     const isLogin = method === "login";
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
+    const [role, setRole] = useState("student");
     const [profileIcon, setProfileIcon] = useState("");
+    const [isPremium, setIsPremium] = useState(false);
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -27,7 +29,9 @@ function Form({ route, method }) {
                         username,
                         email,
                         password,
+                        role,
                         profile_icon: profileIcon || null,
+                        is_premium: isPremium,
                     };
 
             const res = await api.post(route, payload);
@@ -72,6 +76,17 @@ function Form({ route, method }) {
                         autoComplete="email"
                     />
 
+                    <select
+                        className="form-input"
+                        value={role}
+                        onChange={(e) => setRole(e.target.value)}
+                        required
+                    >
+                        <option value="student">Student</option>
+                        <option value="lecturer">Lecturer</option>
+                        <option value="admin">Admin</option>
+                    </select>
+
                     <input
                         className="form-input"
                         type="url"
@@ -79,6 +94,15 @@ function Form({ route, method }) {
                         onChange={(e) => setProfileIcon(e.target.value)}
                         placeholder="Profile Icon URL (optional)"
                     />
+
+                    <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <input
+                            type="checkbox"
+                            checked={isPremium}
+                            onChange={(e) => setIsPremium(e.target.checked)}
+                        />
+                        Premium account
+                    </label>
                 </>
             )}
 
