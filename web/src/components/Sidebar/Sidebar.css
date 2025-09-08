@@ -1,0 +1,100 @@
+.sidebar {
+  align-items: center;
+  border-color: #ffffff;
+  border-right-style: solid;
+  border-right-width: 1px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px;
+  position: fixed;
+  width: 312px;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  z-index: 2147483647
+}
+
+.sidebar .frame-6 {
+  align-items: center;
+  align-self: stretch;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 12px;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+}
+
+.sidebar .image {
+  aspect-ratio: 1;
+  height: 48px;
+  position: relative;
+  width: 48px;
+}
+
+.sidebar .text-wrapper-10 {
+  color: #ffffff;
+  font-family: "Kode Mono", Helvetica;
+  font-size: 42px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: px;
+  position: relative;
+  white-space: nowrap;
+  width: fit-content;
+}
+
+.sidebar .frame-7 {
+  align-items: center;
+  align-self: stretch;
+  display: flex;
+  gap: 24px;
+  height: 76px;
+  padding-left: 12px;
+  position: relative;
+  width: 100%-12px;
+  border-radius: 12px;
+}
+.sidebar .frame-7:hover {
+  background-color: rgba(28, 176, 246, 0.2); /* or any color you want */
+  border-color: #60CC04;  /* optional: change border color */
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.sidebar .text-wrapper-11 {
+  color: #ffffff;
+  font-family: "Inter", Helvetica;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.20px;
+  line-height: normal;
+  position: relative;
+  white-space: nowrap;
+  width: fit-content;
+}
+
+.sidebar .image-2 {
+  aspect-ratio: 1;
+  height: 48px;
+  object-fit: cover;
+  position: relative;
+  width: 48px;
+}
+
+.sidebar .frame-8 {
+  align-items: center;
+  align-self: stretch;
+  background-color: #1cb0f64c;
+  border: 2px solid;
+  border-color: #1cb0f6;
+  border-radius: 12px;
+  display: flex;
+  gap: 24px;
+  height: 76px;
+  overflow: hidden;
+  padding: 0px 12px;
+  position: relative;
+  width: 100%;
+}

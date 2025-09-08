@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import api from "../api";
 import Note from "../components/Note"
 import "../styles/Home.css"
+import { Sidebar } from "../components/Sidebar/Sidebar";
+import { Stats } from "../components/Stats/Stats";
 
 function Home() {
     const [notes, setNotes] = useState([]);
@@ -48,6 +50,9 @@ function Home() {
 
     return (
         <div>
+            <Sidebar />
+            <Stats />
+            <div style = {{ marginLeft: 360, padding: 24, marginRight: 360 }}>
             <div>
                 <h2>Notes</h2>
                 {notes.map((note) => (
@@ -78,6 +83,7 @@ function Home() {
                 <br />
                 <input type="submit" value="Submit"></input>
             </form>
+        </div>
         </div>
     );
 }
