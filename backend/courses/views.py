@@ -1,200 +1,213 @@
-from rest_framework import viewsets, permissions, generics
+from rest_framework import viewsets, generics, status
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, AllowAny, BasePermission
-from django.db.models import QuerySet
-
-from .models import Course, Chapter, Test, Question, Option, UserTestResult
-from .serializers import (
-    CourseSerializer, ChapterSerializer, TestSerializer,
-    QuestionSerializer, OptionSerializer, UserTestResultSerializer
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from django.db import models
+from .models import (
+    Course, Chapter, Test, Question, Option,
+    UserCourse, UserChapter, UserTestResult, UserAnswer
 )
+from .serializers import (
+    CourseSerializer, ChapterSerializer, TestSerializer, QuestionSerializer, OptionSerializer,
+    UserCourseSerializer, UserChapterSerializer, UserTestResultSerializer, UserAnswerSerializer
+)
+from users.views import IsAdminRole  # if present, else import/create similar permission
+from users.models import User
+from django.db.models import Q
 
+def get_queryset(self):
+    qs = super().get_queryset()
+    # anonymous users => only active courses
+    if not getattr(self.request.user, "is_authenticated", False):
+        return qs.filter(status='active')
+    # admin/staff => all
+    if getattr(self.request.user, "role", None) == 'admin' or self.request.user.is_staff:
+        return qs
+    # normal user => active plus own drafts
+    return qs.filter(Q(status='active') | Q(created_by=self.request.user))
 
-class IsAdminRole(BasePermission):
-    def has_permission(self, request, _):
-        return bool(
-            request.user and request.user.is_authenticated and (getattr(request.user, "role", None) == "admin" or getattr(request.user, "role", None) == "educator")
-        )
+class IsOwnerOrAdmin(IsAuthenticated):
+    def has_object_permission(self, request, view, obj):
+        if getattr(request.user, 'role', None) == 'admin' or request.user.is_staff:
+            return True
+        # Courses: owner check
+        if isinstance(obj, Course):
+            return obj.created_by == request.user
+        # fallback
+        return getattr(obj, 'user', None) == request.user
 
-
-class CreateCourseView(generics.ListCreateAPIView):
-    queryset = Course.objects.all()
+class CourseViewSet(viewsets.ModelViewSet):
+    queryset = Course.objects.all().order_by('-created_date')
     serializer_class = CourseSerializer
     permission_classes = [AllowAny]
 
-    # def get_permissions(self):
-    #     if self.request.method == "POST":
-    #         return [IsAuthenticated()]
-    #     return [AllowAny()]
-
-
-class ListCoursesView(generics.ListAPIView):
-    queryset = Course.objects.all()
-    serializer_class = CourseSerializer
-    permission_classes = [IsAuthenticated, IsAdminRole]
-    
-
-class ManageCourseView(generics.RetrieveUpdateAPIView):
-    queryset = Course.objects.all()
-    serializer_class = CourseSerializer
-    permission_classes = [IsAuthenticated, IsAdminRole]
-    
-class DeleteCourseView(generics.DestroyAPIView):
-    queryset = Course.objects.all()
-    serializer_class = CourseSerializer
-    permission_classes = [IsAuthenticated, IsAdminRole]
-
-
-class CreateChapterView(viewsets.ModelViewSet):
-    serializer_class = ChapterSerializer
-    permission_classes = [AllowAny]
-    queryset = Chapter.objects.select_related("course").all()
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
 
     def get_queryset(self):
         qs = super().get_queryset()
-        course_id = self.request.query_params.get("course")
+        # anonymous users => only active courses
+        if not getattr(self.request.user, "is_authenticated", False):
+            return qs.filter(status='active')
+        # admins/staff see all
+        if getattr(self.request.user, 'role', None) == 'admin' or self.request.user.is_staff:
+            return qs
+        # authenticated non-admins see active and drafts they created
+        return qs.filter(models.Q(status='active') | models.Q(created_by=self.request.user))
+
+class ChapterViewSet(viewsets.ModelViewSet):
+    queryset = Chapter.objects.all()
+    serializer_class = ChapterSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        course_id = self.request.query_params.get('course_id')
+        qs = super().get_queryset()
         if course_id:
-            qs = qs.filter(course_id=course_id)
+            qs = qs.filter(course_id=course_id).order_by('order_index')
         return qs
 
-class ListChaptersView(generics.ListAPIView):
-    queryset = Chapter.objects.select_related("course").all()
-    serializer_class = ChapterSerializer
-    permission_classes = [IsAuthenticated, IsAdminRole]
-    
-class ManageChapterView(generics.RetrieveUpdateAPIView):
-    queryset = Chapter.objects.select_related("course").all()
-    serializer_class = ChapterSerializer
-    permission_classes = [IsAuthenticated, IsAdminRole]
-    
-class DeleteChapterView(generics.DestroyAPIView):
-    queryset = Chapter.objects.select_related("course").all()
-    serializer_class = ChapterSerializer
-    permission_classes = [IsAuthenticated, IsAdminRole]
-
-class CreateTestView(viewsets.ModelViewSet):
+class TestViewSet(viewsets.ModelViewSet):
+    queryset = Test.objects.all()
     serializer_class = TestSerializer
-    permission_classes = [AllowAny]
-    queryset = Test.objects.select_related("chapter", "chapter__course").all()
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        chapter_id = self.request.query_params.get('chapter_id')
         qs = super().get_queryset()
-        chapter_id = self.request.query_params.get("chapter")
         if chapter_id:
             qs = qs.filter(chapter_id=chapter_id)
         return qs
-    
-class ListTestsView(generics.ListAPIView):
-    queryset = Test.objects.select_related("chapter", "chapter__course").all()
-    serializer_class = TestSerializer
-    permission_classes = [IsAuthenticated, IsAdminRole]
-    
-class ManageTestView(generics.RetrieveUpdateAPIView):
-    queryset = Test.objects.select_related("chapter", "chapter__course").all()
-    serializer_class = TestSerializer
-    permission_classes = [IsAuthenticated, IsAdminRole]
-    
-class DeleteTestView(generics.DestroyAPIView):
-    queryset = Test.objects.select_related("chapter", "chapter__course").all()
-    serializer_class = TestSerializer
-    permission_classes = [IsAuthenticated, IsAdminRole]
 
-class CreateQuestionView(viewsets.ModelViewSet):
+class QuestionViewSet(viewsets.ModelViewSet):
+    queryset = Question.objects.all()
     serializer_class = QuestionSerializer
-    permission_classes = [AllowAny]
-    queryset = Question.objects.select_related("test", "test__chapter").all()
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        test_id = self.request.query_params.get('test_id')
         qs = super().get_queryset()
-        test_id = self.request.query_params.get("test")
         if test_id:
             qs = qs.filter(test_id=test_id)
         return qs
-    
-class ListQuestionsView(generics.ListAPIView):
-    queryset = Question.objects.select_related("test", "test__chapter").all()
-    serializer_class = QuestionSerializer
-    permission_classes = [IsAuthenticated, IsAdminRole]
-    
-class ManageQuestionView(generics.RetrieveUpdateAPIView):
-    queryset = Question.objects.select_related("test", "test__chapter").all()
-    serializer_class = QuestionSerializer
-    permission_classes = [IsAuthenticated, IsAdminRole]
-    
-class DeleteQuestionView(generics.DestroyAPIView):
-    queryset = Question.objects.select_related("test", "test__chapter").all()
-    serializer_class = QuestionSerializer
-    permission_classes = [IsAuthenticated, IsAdminRole]
 
-class CreateOptionView(viewsets.ModelViewSet):
+class OptionViewSet(viewsets.ModelViewSet):
+    queryset = Option.objects.all()
     serializer_class = OptionSerializer
-    permission_classes = [AllowAny]
-    queryset = Option.objects.select_related("question", "question__test").all()
-    
-class ListOptionsView(generics.ListAPIView):
-    queryset = Option.objects.select_related("question", "question__test").all()
-    serializer_class = OptionSerializer
-    permission_classes = [IsAuthenticated, IsAdminRole]
-    
-class ManageOptionView(generics.RetrieveUpdateAPIView):
-    queryset = Option.objects.select_related("question", "question__test").all()
-    serializer_class = OptionSerializer
-    permission_classes = [IsAuthenticated, IsAdminRole]
-    
-class DeleteOptionView(generics.DestroyAPIView):
-    queryset = Option.objects.select_related("question", "question__test").all()
-    serializer_class = OptionSerializer
-    permission_classes = [IsAuthenticated, IsAdminRole]
-
-class CreateUserTestResultView(viewsets.ModelViewSet):
-    serializer_class = UserTestResultSerializer
-    permission_classes = [AllowAny]
-
-    def get_permissions(self):
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated()]
-        return [AllowAny()]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = UserTestResult.objects.select_related("user", "test", "test__chapter")
-        # Users see their own results; staff can see all or filter by user
+        question_id = self.request.query_params.get('question_id')
+        qs = super().get_queryset()
+        if question_id:
+            qs = qs.filter(question_id=question_id)
+        return qs
+
+# Enrollment & progress views
+class EnrollView(generics.CreateAPIView):
+    serializer_class = UserCourseSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        course_id = self.request.data.get('course')
+        course = get_object_or_404(Course, id=course_id)
+        serializer.save(user=self.request.user, course=course)
+
+class UserCoursesList(generics.ListAPIView):
+    serializer_class = UserCourseSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return UserCourse.objects.filter(user=self.request.user).select_related('course')
+
+class UpdateUserCourse(generics.RetrieveUpdateAPIView):
+    serializer_class = UserCourseSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        course_id = self.kwargs.get('pk')
+        return get_object_or_404(UserCourse, pk=course_id, user=self.request.user)
+
+class UnenrollView(generics.DestroyAPIView):
+    serializer_class = UserCourseSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        course_id = self.kwargs.get('pk')
+        return get_object_or_404(UserCourse, pk=course_id, user=self.request.user)
+
+# UserChapter management
+class UserChapterView(generics.RetrieveUpdateAPIView):
+    serializer_class = UserChapterSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
         user = self.request.user
-        if getattr(user, "is_staff", False) and (u := self.request.query_params.get("user")):
-            return qs.filter(user_id=u)
-        if getattr(user, "is_authenticated", False):
-            return qs.filter(user=user)
-        return qs.none()
+        chapter_id = self.kwargs.get('chapter_id')
+        chapter = get_object_or_404(Chapter, pk=chapter_id)
+        obj, _ = UserChapter.objects.get_or_create(user=user, chapter=chapter)
+        return obj
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-        qs = UserTestResult.objects.select_related("user", "test", "test__chapter")
-        # Users see their own results; staff can see all or filter by user
-        if self.request.user.is_staff and (u := self.request.query_params.get("user")):
-            return qs.filter(user_id=u)
-        return qs.filter(user=self.request.user)
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-        
-class ListUserTestResultsView(generics.ListAPIView):
+# Test results & answers
+class UserTestResultViewSet(viewsets.ModelViewSet):
+    queryset = UserTestResult.objects.all().order_by('-attempt_date')
     serializer_class = UserTestResultSerializer
-    permission_classes = [IsAuthenticated, IsAdminRole]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = UserTestResult.objects.select_related("user", "test", "test__chapter")
-        user_id = self.request.query_params.get("user")
+        qs = super().get_queryset()
+        user_id = self.request.query_params.get('user_id')
+        test_id = self.request.query_params.get('test_id')
         if user_id:
             qs = qs.filter(user_id=user_id)
+        if test_id:
+            qs = qs.filter(test_id=test_id)
+        # normal users only see own results
+        if self.request.user.role != 'admin' and not self.request.user.is_staff:
+            qs = qs.filter(user=self.request.user)
         return qs
-    
-class ManageUserTestResultView(generics.RetrieveUpdateAPIView):
-    queryset = UserTestResult.objects.select_related("user", "test", "test__chapter").all()
-    serializer_class = UserTestResultSerializer
-    permission_classes = [IsAuthenticated, IsAdminRole]
-    
-class DeleteUserTestResultView(generics.DestroyAPIView):
-    queryset = UserTestResult.objects.select_related("user", "test", "test__chapter").all()
-    serializer_class = UserTestResultSerializer
-    permission_classes = [IsAuthenticated, IsAdminRole]
-    
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class UserAnswerViewSet(viewsets.ModelViewSet):
+    queryset = UserAnswer.objects.all()
+    serializer_class = UserAnswerSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        result_id = self.request.query_params.get('result_id')
+        if result_id:
+            qs = qs.filter(result_id=result_id)
+        # restrict to owner unless admin
+        if self.request.user.role != 'admin' and not self.request.user.is_staff:
+            qs = qs.filter(result__user=self.request.user)
+        return qs
+
+# small helper endpoint to mark chapter complete and update progress_percent
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def mark_chapter_complete(request, chapter_id):
+    user = request.user
+    chapter = get_object_or_404(Chapter, pk=chapter_id)
+    uc, _ = UserChapter.objects.get_or_create(user=user, chapter=chapter)
+    uc.completed = True
+    uc.last_accessed = timezone.now()
+    uc.save()
+
+    # update UserCourse progress_percent if enrolled
+    try:
+        uc_course = UserCourse.objects.get(user=user, course=chapter.course)
+        total = chapter.course.chapters.count() or 1
+        completed = UserChapter.objects.filter(user=user, chapter__course=chapter.course, completed=True).count()
+        uc_course.progress_percent = round((completed / total) * 100, 2)
+        if uc_course.progress_percent >= 100:
+            uc_course.status = 'completed'
+        uc_course.save()
+    except UserCourse.DoesNotExist:
+        pass
+
+    return Response({'success': True, 'progress_percent': getattr(uc_course, 'progress_percent', None)})

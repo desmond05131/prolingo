@@ -18,6 +18,9 @@ urlpatterns = [
     path("api/notes/", include("notes.urls")),
     path("api/courses/", include("courses.urls")),
     path("api/stats/", include("stats.urls")),
+    path('api/gamification/', include('gamification.urls')),
+    path("api/feedback/", include("feedback.urls")),
+    path("api/premium/", include("premium.urls")),
 
     path("", lambda request: HttpResponse("Welcome to Prolingo API"), name="home"),
 ]

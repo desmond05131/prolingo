@@ -61,7 +61,10 @@ INSTALLED_APPS = [
     'users',
     'notes',
     'courses',
-    'stats'
+    'stats',
+    'gamification',
+    'feedback',
+    'premium',
 ]
 
 MIDDLEWARE = [
