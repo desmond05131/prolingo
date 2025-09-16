@@ -1,0 +1,125 @@
+/* Add these styles to your existing Table.css file */
+
+.test-result-table-container {
+  padding: 20px;
+  max-width: 1800px;
+  margin: 0 auto;
+}
+
+.test-result-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.test-result-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.badge-test {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.badge-chapter {
+  background-color: #6c757d;
+  color: white;
+}
+
+.badge-score-pass {
+  background-color: #28a745;
+  color: white;
+  font-weight: bold;
+}
+
+.badge-score-fail {
+  background-color: #dc3545;
+  color: white;
+  font-weight: bold;
+}
+
+.badge-attempt {
+  background-color: #6f42c1;
+  color: white;
+}
+
+.badge-passed {
+  background-color: #28a745;
+  color: white;
+}
+
+.badge-failed {
+  background-color: #dc3545;
+  color: white;
+}
+
+/* Test result table specific adjustments */
+.test-result-table th,
+.test-result-table td {
+  padding: 8px 6px;
+  font-size: 12px;
+  vertical-align: middle;
+}
+
+.test-result-table .actions-cell {
+  min-width: 140px;
+}
+
+/* Filter specific styling */
+.table-controls .filter-container:nth-child(2) {
+  min-width: 120px; /* Passed filter */
+}
+
+.table-controls .filter-container:nth-child(3) {
+  min-width: 140px; /* Course filter */
+}
+
+.table-controls .filter-container:nth-child(4) {
+  min-width: 130px; /* Chapter filter */
+}
+
+.table-controls .filter-container:nth-child(5) {
+  min-width: 120px; /* Test filter */
+}
+
+.table-controls .filter-container:nth-child(6) {
+  min-width: 120px; /* User filter */
+}
+
+/* Responsive */
+@media (max-width: 1600px) {
+  .test-result-table-container {
+    padding: 15px;
+  }
+  
+  .test-result-table th,
+  .test-result-table td {
+    padding: 6px 4px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 768px) {
+  .test-result-detail-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .table-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .search-container,
+  .filter-container {
+    min-width: auto;
+    max-width: none;
+  }
+  
+  .large-modal .modal-content {
+    width: 95%;
+    max-width: none;
+  }
+}

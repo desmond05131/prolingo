@@ -1,7 +1,19 @@
-import Form from "../components/Form"
+import LoginForm from "../components/Forms/LoginForm"
+import RegisterButton from "../components/Buttons/RegisterButton"
 
 function Login() {
-    return <Form route="/api/token/" method="login" />
+    return <LoginForm route="/api/token/" />
+}
+
+const OriginalLogin = Login
+
+Login = function LoginWithRegisterButton() {
+    return (
+        <>
+            <OriginalLogin />
+            <RegisterButton />
+        </>
+    )
 }
 
 export default Login

@@ -1,0 +1,303 @@
+.course-detail-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.course-detail-header {
+  margin-bottom: 30px;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  color: #007bff;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-bottom: 20px;
+  transition: color 0.3s ease;
+}
+
+.back-button:hover {
+  color: #0056b3;
+}
+
+.course-info h1 {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.course-description {
+  font-size: 1.1rem;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.enrollment-status {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-badge.completed {
+  background-color: #28a745;
+  color: white;
+}
+
+.status-badge.in-progress {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.status-badge.dropped {
+  background-color: #dc3545;
+  color: white;
+}
+
+.progress-bar {
+  height: 8px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.enrollment-prompt {
+  text-align: center;
+  padding: 60px 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 2px dashed #e9ecef;
+}
+
+.enrollment-prompt h3 {
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+}
+
+.enrollment-prompt p {
+  color: #666;
+  margin-bottom: 25px;
+  font-size: 1.1rem;
+}
+
+.chapters-section h2 {
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 25px;
+}
+
+.no-chapters {
+  text-align: center;
+  padding: 40px 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  color: #666;
+}
+
+.chapters-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.chapter-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.chapter-card:hover {
+  border-color: #007bff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.chapter-card.completed {
+  border-color: #28a745;
+  background: linear-gradient(135deg, #fff 0%, #f8fff9 100%);
+}
+
+.chapter-card.in-progress {
+  border-color: #17a2b8;
+  background: linear-gradient(135deg, #fff 0%, #f0fcff 100%);
+}
+
+.chapter-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.chapter-card.not-started .chapter-number {
+  background-color: #e9ecef;
+  color: #666;
+}
+
+.chapter-card.in-progress .chapter-number {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.chapter-card.completed .chapter-number {
+  background-color: #28a745;
+  color: white;
+}
+
+.chapter-content {
+  flex: 1;
+}
+
+.chapter-content h3 {
+  font-size: 1.2rem;
+  color: #333;
+  margin: 0 0 8px 0;
+}
+
+.chapter-preview {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.chapter-status {
+  flex-shrink: 0;
+}
+
+.status-indicator {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-indicator.not-started {
+  background-color: #f8f9fa;
+  color: #666;
+  border: 1px solid #e9ecef;
+}
+
+.status-indicator.in-progress {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.status-indicator.completed {
+  background-color: #28a745;
+  color: white;
+}
+
+.button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.button-primary:hover {
+  background-color: #0056b3;
+  transform: translateY(-1px);
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid #f5c6cb;
+}
+
+.error-message button {
+  margin-top: 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .course-detail-container {
+    padding: 15px;
+  }
+
+  .course-info h1 {
+    font-size: 2rem;
+  }
+
+  .chapter-card {
+    gap: 15px;
+    padding: 15px;
+  }
+
+  .chapter-number {
+    width: 35px;
+    height: 35px;
+    font-size: 12px;
+  }
+
+  .chapter-content h3 {
+    font-size: 1.1rem;
+  }
+
+  .progress-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}

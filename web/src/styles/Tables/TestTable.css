@@ -1,0 +1,163 @@
+/* Add these styles to your existing Table.css file */
+
+.test-table-container {
+  padding: 20px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.test-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.test-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.test-detail-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.questions-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.question-item {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 8px;
+}
+
+.question-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.question-text {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #666;
+  font-style: italic;
+}
+
+.badge-quiz {
+  background-color: #28a745;
+  color: white;
+}
+
+.badge-coding {
+  background-color: #6f42c1;
+  color: white;
+}
+
+.badge-objective {
+  background-color: #007bff;
+  color: white;
+}
+
+.badge-structure-obj {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.badge-structure-no-repeat {
+  background-color: #fd7e14;
+  color: white;
+}
+
+.badge-structure-custom {
+  background-color: #6c757d;
+  color: white;
+}
+
+.badge-yes {
+  background-color: #28a745;
+  color: white;
+}
+
+.badge-no {
+  background-color: #dc3545;
+  color: white;
+}
+
+.attempts-badge {
+  background-color: #ffc107;
+  color: #212529;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.score-badge {
+  background-color: #20c997;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+.checkbox-group label {
+  margin: 0;
+  cursor: pointer;
+}
+
+/* Table specific adjustments */
+.test-table th,
+.test-table td {
+  padding: 8px 6px;
+  font-size: 13px;
+}
+
+.test-table .actions-cell {
+  min-width: 140px;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .test-table-container {
+    padding: 15px;
+  }
+  
+  .test-table th,
+  .test-table td {
+    padding: 6px 4px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .test-detail-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .table-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .filter-container {
+    min-width: auto;
+  }
+}

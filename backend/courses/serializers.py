@@ -39,11 +39,16 @@ class CourseSerializer(serializers.ModelSerializer):
         read_only_fields = ['created_by', 'created_date', 'created_by_username']
 
 class UserCourseSerializer(serializers.ModelSerializer):
-    course_title = serializers.ReadOnlyField(source='course.title')
     class Meta:
         model = UserCourse
-        fields = ['id', 'user', 'course', 'course_title', 'enrollment_date', 'progress_percent', 'status']
-        read_only_fields = ['enrollment_date']
+        fields = ['id', 'course', 'enrollment_date', 'progress_percent', 'status']
+        read_only_fields = ['enrollment_date', 'progress_percent']
+        
+    def validate_course(self, value):
+        # Ensure the course exists and is active
+        if value.status != 'active':
+            raise serializers.ValidationError("Cannot enroll in inactive courses.")
+        return value
 
 class UserChapterSerializer(serializers.ModelSerializer):
     chapter_title = serializers.ReadOnlyField(source='chapter.title')

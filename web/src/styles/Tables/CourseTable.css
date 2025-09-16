@@ -1,0 +1,291 @@
+/* Add these to your existing Table.css file */
+
+.course-table-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.title-cell {
+  max-width: 300px;
+}
+
+.title-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.description-preview {
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+}
+
+.description-content {
+  max-height: 100px;
+  overflow-y: auto;
+  padding: 8px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  white-space: pre-wrap;
+}
+
+.course-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.course-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.course-detail-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.chapters-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.chapter-item {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chapter-item:last-child {
+  border-bottom: none;
+}
+
+.badge-draft {
+  background-color: #6c757d;
+  color: white;
+}
+
+.badge-archived {
+  background-color: #fd7e14;
+  color: white;
+}
+
+.badge-warning {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.badge-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.button-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.button-warning {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+.ml-2 {
+  margin-left: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .table-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .user-detail-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .actions-cell {
+    flex-direction: column;
+  }
+  
+  .course-detail-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .header-actions {
+    flex-direction: column;
+  }
+  
+  .table-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-container {
+    max-width: none;
+  }
+  
+  .filter-container {
+    min-width: auto;
+  }
+  
+  .chapter-detail-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .content-preview-cell {
+    max-width: none;
+  }
+}
+
+.chapter-table-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.filter-container {
+  min-width: 200px;
+}
+
+.filter-select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  background: white;
+}
+
+.content-preview-cell {
+  max-width: 200px;
+}
+
+.content-preview {
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+  line-height: 1.3;
+}
+
+.no-content {
+  color: #999;
+  font-style: italic;
+  font-size: 12px;
+}
+
+.order-badge {
+  background-color: #17a2b8;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.content-display {
+  max-height: 150px;
+  overflow-y: auto;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  white-space: pre-wrap;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.chapter-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.chapter-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chapter-detail-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.tests-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.test-item {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.test-item:last-child {
+  border-bottom: none;
+}
+
+.chapter-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.chapter-table th,
+.chapter-table td {
+  padding: 12px 8px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  vertical-align: top;
+}
+
+.chapter-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}

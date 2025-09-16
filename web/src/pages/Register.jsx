@@ -1,7 +1,19 @@
-import Form from '../components/Form'
+import RegisterForm from '../components/Forms/RegisterForm'
+import LoginButton from '../components/Buttons/LoginButton';
 
 function Register() {
-    return <Form route="/api/users/register/" method="register" />;
+    return <RegisterForm route="/api/users/register/" />;
+}
+
+const BaseRegister = Register
+
+Register = function RegisterWithLoginButton() {
+    return (
+        <>
+            <BaseRegister />
+            <LoginButton />
+        </>
+    );
 }
 
 export default Register;

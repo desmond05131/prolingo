@@ -1,0 +1,234 @@
+/* Add these styles to your existing Table.css file */
+
+.user-course-table-container {
+  padding: 20px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.course-title-cell {
+  max-width: 250px;
+}
+
+.course-title-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.course-description-preview {
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+}
+
+.course-description-display {
+  max-height: 120px;
+  overflow-y: auto;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  white-space: pre-wrap;
+  font-size: 14px;
+  line-height: 1.5;
+  border: 1px solid #e9ecef;
+}
+
+.user-course-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.user-course-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-course-detail-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.progress-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 12px;
+  background-color: #e9ecef;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.3s ease;
+}
+
+.progress-minimal .progress-fill {
+  background-color: #dc3545;
+}
+
+.progress-low .progress-fill {
+  background-color: #fd7e14;
+}
+
+.progress-medium .progress-fill {
+  background-color: #ffc107;
+}
+
+.progress-high .progress-fill {
+  background-color: #20c997;
+}
+
+.progress-completed .progress-fill {
+  background-color: #28a745;
+}
+
+.progress-text {
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 40px;
+  text-align: right;
+}
+
+.badge-in-progress {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.badge-completed {
+  background-color: #28a745;
+  color: white;
+}
+
+.badge-dropped {
+  background-color: #dc3545;
+  color: white;
+}
+
+.badge-user {
+  background-color: #6f42c1;
+  color: white;
+}
+
+.table-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.search-container {
+  flex: 2;
+  max-width: 300px;
+  min-width: 200px;
+}
+
+.filter-container {
+  min-width: 120px;
+  flex: 1;
+}
+
+/* User course table specific adjustments */
+.user-course-table th,
+.user-course-table td {
+  padding: 10px 8px;
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+.user-course-table .actions-cell {
+  min-width: 150px;
+}
+
+/* Large modal for detailed view */
+.large-modal .modal-content {
+  max-width: 700px;
+  width: 90%;
+}
+
+/* Form specific styles for user course */
+.form-group select[disabled],
+.form-group input[disabled] {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
+  .user-course-table-container {
+    padding: 15px;
+  }
+  
+  .user-course-table th,
+  .user-course-table td {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+  
+  .course-title-cell {
+    max-width: 200px;
+  }
+  
+  .progress-container {
+    min-width: 100px;
+  }
+}
+
+@media (max-width: 768px) {
+  .user-course-detail-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .table-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .search-container,
+  .filter-container {
+    min-width: auto;
+    max-width: none;
+  }
+  
+  .large-modal .modal-content {
+    width: 95%;
+    max-width: none;
+  }
+  
+  .progress-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+  
+  .progress-text {
+    text-align: center;
+    min-width: auto;
+  }
+}
+
+/* Status filter specific styling */
+.filter-container:nth-child(2) {
+  min-width: 140px; /* Status filter */
+}
+
+.filter-container:nth-child(3) {
+  min-width: 150px; /* Course filter */
+}
+
+.filter-container:nth-child(4) {
+  min-width: 130px; /* User filter */
+}
