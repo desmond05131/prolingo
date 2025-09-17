@@ -19,13 +19,11 @@ const EnergyIcon = ({ i, percent }) => (
   </svg>
 );
 
-export const Stats = ({
-    className
-}) => {
+export const Stats = () => {
     const { level, xp, energy, streak } = useStatsState();
 
     return (
-        <div className={`stats ${className}`}>
+        <div className="stats">
         <div className="heading">
             <div className="frame-9">
             <div className="frame-10">

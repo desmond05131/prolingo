@@ -1,8 +1,6 @@
-import react from "react"
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import Login from "./pages/Login"
 import Register from "./pages/Register"
-import Home from "./pages/Home"
 import UpdateProfile from "./pages/UpdateProfile"
 import AdminCreateUser from "./pages/AdminOperations/AdminCreateUser"
 import AdminListUser from "./pages/AdminOperations/AdminListUser"
@@ -21,6 +19,11 @@ import AccessCourses from "./pages/Courses"
 // import AttemptTest from "./pages/AttemptTest"
 import NotFound from "./pages/NotFound"
 import ProtectedRoute from "./components/ProtectedRoute"
+import LeaderboardHome from "./pages/Home/Leaderboard"
+import AchievementsHome from "./pages/Home/Achievements"
+import SettingsHome from "./pages/Home/Settings"
+import LearnHome from "./pages/Home/Learn"
+import ProfileHome from "./pages/Home/Profile"
 
 function Logout() {
   localStorage.clear()
@@ -40,13 +43,22 @@ function App() {
           path="/"
           element={
             <ProtectedRoute>
-              <Home />
+              <Navigate to="/leaderboards" />
             </ProtectedRoute>
           }
         />
+
         <Route path="/login" element={<Login />} />
         <Route path="/logout" element={<Logout />} />
         <Route path="/register" element={<RegisterAndLogout />} />
+
+        <Route path="/leaderboards" element={<ProtectedRoute><LeaderboardHome /></ProtectedRoute>} />
+        <Route path="/achievements" element={<ProtectedRoute><AchievementsHome /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><SettingsHome /></ProtectedRoute>} />
+        <Route path="/learn" element={<ProtectedRoute><LearnHome /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><ProfileHome /></ProtectedRoute>} />
+
+
         <Route path="/update-profile" element={<ProtectedRoute><UpdateProfile /></ProtectedRoute>} />
         <Route path="/admin/create-user" element={<ProtectedRoute><AdminCreateUser /></ProtectedRoute>} />
         <Route path="/admin/list-user" element={<ProtectedRoute><AdminListUser /></ProtectedRoute>} />
