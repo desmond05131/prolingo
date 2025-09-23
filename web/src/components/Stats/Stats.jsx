@@ -71,22 +71,19 @@ export const Stats = ({ className = '' }) => {
 		return (energy - start) / segmentValue; // partial 0-1
 	});
 
-	return (
-		<aside
-			className={`pointer-events-none fixed right-0 top-0 flex flex-col items-end gap-6 p-6 h-screen text-white ${className}`}
-			aria-label="Player statistics"
-		>
-			{/* Header Badges */}
-					<div className="pointer-events-auto flex items-center gap-6 mt-2 pr-1 select-none">
-						<div className="flex items-center gap-2">
-							<FireIcon className="w-7 h-7 text-orange-400" />
-							<span className="text-2xl font-bold text-orange-300 leading-none" aria-label="Streak value">{streak}</span>
-						</div>
-						<div className="flex items-center gap-2">
-							<span className="text-yellow-300 text-3xl leading-none">⚡</span>
-							<span className="text-2xl font-bold text-yellow-200 leading-none" aria-label="Energy value">{energy}</span>
-						</div>
-					</div>
+    return (
+        <div className={`stats ${className}`}>
+        <div className="heading">
+            <div className="frame-9">
+            <div className="frame-10">
+                <img
+                className="fire"
+                alt="Fire"
+                src="/assets/Streak.svg"
+                />
+
+                <div className="text-wrapper-12">{streak}</div>
+            </div>
 
 			{/* Cards */}
 			<div className="pointer-events-auto flex flex-col gap-6 w-full">

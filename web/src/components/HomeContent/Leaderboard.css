@@ -1,0 +1,212 @@
+.content {
+    position: relative; /* Add this line */
+    top: 24px;
+    height: calc(100vh - 48px);
+    width: 100%;
+    max-width: 640px;
+    min-width: 320px;
+    overflow: hidden;
+    overflow-y: scroll;
+    display: block;
+}
+
+.content .titles {
+  height: 63px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.content .text-wrapper {
+  color: #ffffff;
+  font-family: 'DinRoundPro', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  letter-spacing: 0.4px;
+  line-height: normal;
+  position: absolute;
+  text-align: center;
+  top: -1px;
+}
+
+.content .div {
+  color: #ffffff;
+  font-family: 'DinRoundPro', sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  letter-spacing: 0.4px;
+  line-height: normal;
+  position: absolute;
+  text-align: center;
+  top: 48px;
+  width: 100%;
+}
+
+
+.content .line {
+    position: absolute;
+    top: 104px;
+    left: 0;
+    width: 100%;
+    border-color: #354750;
+    border-style: solid;
+    border-width: 0 0 2px 0;
+}
+
+.content .frame {
+  background-color: #1cb0f6;
+  border-radius: 10px;
+  flex: 1;
+  flex-grow: 1;
+  height: 64px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content .text-wrapper-2 {
+  color: #ffffff;
+  font-family: 'DinRoundPro', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  line-height: normal;
+  text-align: center;
+  width: 100%;
+  margin: 0 auto;
+  position: static;
+}
+
+.content .div-wrapper {
+  background-color: #1cb0f64c;
+  border: 2px solid;
+  border-color: #1cb0f6aa;
+  border-radius: 12px;
+  flex: 1;
+  flex-grow: 1;
+  height: 64px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content .text-wrapper-3 {
+  color: #1cb0f6;
+  font-family: 'DinRoundPro', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  line-height: normal;
+  text-align: center;
+  width: 100%;
+  margin: 0 auto;
+  position: static;
+}
+
+.content .scroll {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  overflow: hidden;
+  padding: 0px 0px 48px;
+  position: absolute;
+  top: 148px;
+  width: 100%;
+}
+
+.content .frame-2 {
+  align-self: stretch;
+  height: 67px;
+  margin-left: -1.00px;
+  margin-right: -1.00px;
+  margin-top: -1.00px;
+  position: relative;
+  width: 100%;
+}
+
+.content .text-wrapper-4 {
+
+  font-family: 'DinRoundPro', sans-serif;
+  font-size: 21px;
+  font-weight: 600;
+  left: 0px;
+  letter-spacing: -0.8px;
+  line-height: normal;
+  position: absolute;
+  text-align: right;
+  top: 12px;
+  width: 32px;
+}
+
+.content .ellipse {
+  background-color: #ffffff;
+  border-radius: 26px / 26px;
+  height: 50px;
+  left: 58px;
+  position: absolute;
+  top: 0;
+  width: 51px;
+}
+
+.content .overlap-group {
+  height: 32px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  position: absolute;
+  left: 136px;
+  top: 10px;
+  width: calc(100% - 50px - 16px - 96px);
+  min-width: 0;
+}
+
+.content .text-wrapper-5 {
+  color: #ffffff;
+  font-family: 'DinRoundPro', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  line-height: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 70%;
+  position: static;
+}
+
+.content .text-wrapper-6 {
+  color: #dddddd;
+  font-family: 'DinRoundPro', sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.8px;
+  line-height: normal;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 30%;
+  position: static;
+}
+
+
+.content::-webkit-scrollbar {
+  display: none;
+  width: 0;
+}

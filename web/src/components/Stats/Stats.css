@@ -1,14 +1,40 @@
+@media (max-width: 700px) {
+  .stats {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1000px) {
+  .main-content {
+    margin-left: 24px !important;
+    flex-direction: column;
+    gap: 24px;
+    align-items: stretch;
+    justify-content: flex-start;
+  }
+}
+
+.main-content {
+  margin-left: 288px;
+  display: flex;
+  flex-direction: row;
+  gap: 32px;
+  flex: 1;
+  justify-content: center;
+  align-items: flex-start;
+}
+
 .stats {
   align-items: flex-end;
   display: flex;
   flex-direction: column;
   gap: 24px;
-  position: fixed;
+  position: sticky;
   width: 312px;
-  height: 100vh;
-  right: 0;
-  top: 0;
-  padding-right: 24px;
+  height: 100%;
+  align-self: flex-end;
+  padding-right: 0;
+  flex-shrink: 0;
 }
 
 .stats .heading {
@@ -42,16 +68,14 @@
 
 .stats .fire {
   aspect-ratio: 1;
-  height: 36px;
-
+  height: 24px;
   position: relative;
-  width: 36px;
+  width: 24px;
 }
 
 .stats .text-wrapper-12 {
-
+  font-family: 'DinRoundPro', sans-serif;
   color: #ff8818;
-  font-family: "Inter", Helvetica;
   font-size: 20px;
   font-weight: 700;
   letter-spacing: 0;
@@ -63,18 +87,19 @@
 }
 
 .stats .frame-11 {
-  height: 36px;
+  height: 24px;
   position: relative;
-  width: 36px;
+  width: 24px;
 }
 
 .stats .text-wrapper-13 {
 
   color: #fff600;
-  font-family: "Inter", Helvetica;
-  font-size: 20px;
+  font-family: 'DinRoundPro', sans-serif;
   font-weight: 700;
-  letter-spacing: 0;
+  letter-spacing: 0.8px;
+  font-size: 20px;
+
   line-height: normal;
   margin-top: -1.00px;
   position: relative;
@@ -84,9 +109,9 @@
 
 .stats .div-2 {
   align-self: stretch;
-  border: 1px solid;
-  border-color: #ffffff;
-  border-radius: 12px;
+  border: 2px solid;
+  border-color: #354750;
+  border-radius: 16px;
   min-height: 48px;
   overflow: hidden;
   position: relative;
@@ -98,12 +123,12 @@
 
 .stats .label {
   color: #ffffff;
-  font-family: "Inter", Helvetica;
-  font-size: 20px;
+  font-family: 'DinRoundPro', sans-serif;
   font-weight: 700;
+  letter-spacing: 0.8px;
+  font-size: 16px;
   top: auto;
   left: auto;
-  letter-spacing: 0;
   line-height: normal;
   position: static;
   width: auto;
@@ -122,10 +147,10 @@
 
 .stats .level {
   color: #ffffff;
-  font-family: "Inter", Helvetica;
-  font-size: 20px;
+  font-family: 'DinRoundPro', sans-serif;
   font-weight: 700;
-  letter-spacing: 0;
+  letter-spacing: 0.8px;
+  font-size: 16px;
   line-height: normal;
   margin-top: -1.00px;
   position: relative;
@@ -180,9 +205,10 @@
   color: #ffffff;
   display: -webkit-box;
   font-family: "Inter", Helvetica;
-  font-size: 20px;
+  font-family: 'DinRoundPro', sans-serif;
   font-weight: 700;
-  letter-spacing: 0;
+  letter-spacing: 0.8px;
+  font-size: 16px;
   line-height: normal;
   overflow: hidden;
   position: relative;
@@ -205,11 +231,11 @@
 
 .stats .text-wrapper-14 {
   color: #ffffff;
-  font-family: "Inter", Helvetica;
-  font-size: 20px;
+  font-family: 'DinRoundPro', sans-serif;
   font-weight: 700;
+  letter-spacing: 0.8px;
+  font-size: 20px;
   left: 24px;
-  letter-spacing: 0;
   line-height: normal;
   position: absolute;
   top: 15px;
@@ -234,11 +260,11 @@
 }
 
 .stats .label-2 {
-  color: #ffffff;
-  font-family: "Inter", Helvetica;
-  font-size: 20px;
+  color: #ccc;
+  font-family: 'DinRoundPro', sans-serif;
   font-weight: 700;
-  letter-spacing: 0;
+  letter-spacing: 0.8px;
+  font-size: 16px;
   line-height: normal;
   margin-top: -1.00px;
   position: relative;
