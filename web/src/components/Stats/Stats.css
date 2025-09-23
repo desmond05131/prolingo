@@ -15,7 +15,7 @@
 }
 
 .main-content {
-  margin-left: 288px;
+  /* margin-left: 288px; */
   display: flex;
   flex-direction: row;
   gap: 32px;
