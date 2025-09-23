@@ -3,7 +3,6 @@ import { Sidebar } from "../../components/Sidebar/Sidebar";
 import { Stats } from "../../components/Stats/Stats";
 import "../../styles/Home.css";
 import "../../styles/Achievements.css"; // custom scroll styling similar to leaderboard
-import SectionTitle from "@/components/achievement/SectionTitle";
 import AchievementRow from "@/components/achievement/AchievementRow";
 
 // Mock achievements data (could be moved to constants or fetched later)

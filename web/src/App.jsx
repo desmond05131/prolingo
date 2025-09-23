@@ -17,8 +17,6 @@ import UserTestResults from "./pages/CoursesRelated/UserTestResults"
 import UserAnswers from "./pages/CoursesRelated/UserAnswers"
 import CourseDetail from "./pages/CourseDetail"
 import AccessCourses from "./pages/Courses"
-import LeaderboardPage from "./pages/Leaderboard";
-import AchievementPage from "./pages/Achievement";
 // import AttemptTest from "./pages/AttemptTest"
 import NotFound from "./pages/NotFound"
 import ProtectedRoute from "./components/ProtectedRoute"

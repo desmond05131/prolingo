@@ -1,12 +1,10 @@
+import { useBoundStore } from "@/stores/stores";
 import { useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 const tileTooltipLeftOffsets = [140, 95, 70, 95, 140, 185, 210, 185];
 
-const getTileTooltipLeftOffset = ({
-  index,
-  unitNumber,
-  tilesLength,
-}) => {
+const getTileTooltipLeftOffset = ({ index, unitNumber, tilesLength }) => {
   if (index >= tilesLength - 1) {
     return tileTooltipLeftOffsets[0];
   }
@@ -21,8 +19,6 @@ const getTileTooltipLeftOffset = ({
 
   return offsets[index % offsets.length] ?? tileTooltipLeftOffsets[0];
 };
-
-
 
 export const TileTooltip = ({
   selectedTile,
@@ -39,7 +35,7 @@ export const TileTooltip = ({
     const containsTileTooltip = (event) => {
       if (selectedTile !== index) return;
       const clickIsInsideTooltip = tileTooltipRef.current?.contains(
-        event.target,
+        event.target
       );
       if (clickIsInsideTooltip) return;
       closeTooltip();
@@ -49,6 +45,7 @@ export const TileTooltip = ({
     return () => window.removeEventListener("click", containsTileTooltip, true);
   }, [selectedTile, tileTooltipRef, closeTooltip, index]);
 
+  const units = useBoundStore((state) => state.units);
   const unit = units.find((unit) => unit.unitNumber === unitNumber);
   const activeBackgroundColor = unit?.backgroundColor ?? "bg-green-500";
   const activeTextColor = unit?.textColor ?? "text-green-500";
@@ -67,8 +64,8 @@ export const TileTooltip = ({
           status === "ACTIVE"
             ? activeBackgroundColor
             : status === "LOCKED"
-              ? "border-2 border-gray-200 bg-gray-100"
-              : "bg-yellow-400",
+            ? "border-2 border-gray-200 bg-gray-100"
+            : "bg-yellow-400",
           index === selectedTile ? "top-4 scale-100" : "-top-14 scale-0",
         ].join(" ")}
         style={{ left: "calc(50% - 150px)" }}
@@ -79,8 +76,8 @@ export const TileTooltip = ({
             status === "ACTIVE"
               ? activeBackgroundColor
               : status === "LOCKED"
-                ? "border-l-2 border-t-2 border-gray-200 bg-gray-100"
-                : "bg-yellow-400",
+              ? "border-l-2 border-t-2 border-gray-200 bg-gray-100"
+              : "bg-yellow-400",
           ].join(" ")}
           style={{
             left: getTileTooltipLeftOffset({ index, unitNumber, tilesLength }),
@@ -92,15 +89,15 @@ export const TileTooltip = ({
             status === "ACTIVE"
               ? "text-white"
               : status === "LOCKED"
-                ? "text-gray-400"
-                : "text-yellow-600",
+              ? "text-gray-400"
+              : "text-yellow-600",
           ].join(" ")}
         >
           {description}
         </div>
         {status === "ACTIVE" ? (
           <Link
-            href="/lesson"
+            to="/lesson"
             className={[
               "flex w-full items-center justify-center rounded-xl border-b-4 border-gray-200 bg-white p-3 uppercase",
               activeTextColor,
@@ -117,7 +114,7 @@ export const TileTooltip = ({
           </button>
         ) : (
           <Link
-            href="/lesson"
+            to="/lesson"
             className="flex w-full items-center justify-center rounded-xl border-b-4 border-yellow-200 bg-white p-3 uppercase text-yellow-400"
           >
             Practice +5 XP
@@ -125,5 +122,5 @@ export const TileTooltip = ({
         )}
       </div>
     </div>
-  )
-}
+  );
+};

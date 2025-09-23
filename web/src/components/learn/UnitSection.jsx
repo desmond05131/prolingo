@@ -1,4 +1,9 @@
+import { useBoundStore } from "@/stores/stores";
 import { useEffect, useState, useCallback } from "react";
+import { TileIcon } from "./TileIcon";
+import { HoverLabel } from "./HoverLabel";
+import { UnitHeader } from "./UnitHeader";
+import { TileTooltip } from "./TileTooltip";
 
 const tileLeftClassNames = [
   "left-0",
@@ -11,11 +16,7 @@ const tileLeftClassNames = [
   "left-[45px]",
 ];
 
-const getTileLeftClassName = ({
-  index,
-  unitNumber,
-  tilesLength,
-}) => {
+const getTileLeftClassName = ({ index, unitNumber, tilesLength }) => {
   if (index >= tilesLength - 1) {
     return "left-0";
   }
@@ -40,9 +41,22 @@ const getTileColors = ({ tileType, status, defaultColors }) => {
   }
 };
 
-export const UnitSection = ({ unit }) => {
-  const router = useRouter();
+const tileStatus = (units, tile, lessonsCompleted) => {
+  const lessonsPerTile = 4;
+  const tilesCompleted = Math.floor(lessonsCompleted / lessonsPerTile);
+  const tiles = units.flatMap((unit) => unit.tiles);
+  const tileIndex = tiles.findIndex((t) => t === tile);
 
+  if (tileIndex < tilesCompleted) {
+    return "COMPLETE";
+  }
+  if (tileIndex > tilesCompleted) {
+    return "LOCKED";
+  }
+  return "ACTIVE";
+};
+
+export const UnitSection = ({ unit }) => {
   const [selectedTile, setSelectedTile] = useState(null);
 
   useEffect(() => {
@@ -58,6 +72,7 @@ export const UnitSection = ({ unit }) => {
     (x) => x.increaseLessonsCompleted
   );
   const increaseLingots = useBoundStore((x) => x.increaseLingots);
+  const units = useBoundStore((x) => x.units);
 
   return (
     <>
@@ -69,7 +84,7 @@ export const UnitSection = ({ unit }) => {
       />
       <div className="relative mb-8 mt-[67px] flex max-w-2xl flex-col items-center gap-4">
         {unit.tiles.map((tile, i) => {
-          const status = tileStatus(tile, lessonsCompleted);
+          const status = tileStatus(units, tile, lessonsCompleted);
           return (
             <div key={i}>
               {(() => {
@@ -100,18 +115,13 @@ export const UnitSection = ({ unit }) => {
                           }),
                         ].join(" ")}
                       >
-                        {tile.type === "fast-forward" && status === "LOCKED" ? (
-                          <HoverLabel
-                            text="Jump here?"
-                            textColor={unit.textColor}
-                          />
-                        ) : selectedTile !== i && status === "ACTIVE" ? (
+                        {selectedTile !== i && status === "ACTIVE" ? (
                           <HoverLabel text="Start" textColor={unit.textColor} />
                         ) : null}
-                        <LessonCompletionSvg
+                        {/* <LessonCompletionSvg
                           lessonsCompleted={lessonsCompleted}
                           status={status}
-                        />
+                        /> */}
                         <button
                           className={[
                             "absolute m-3 rounded-full border-b-8 p-4",
@@ -122,15 +132,6 @@ export const UnitSection = ({ unit }) => {
                             }),
                           ].join(" ")}
                           onClick={() => {
-                            if (
-                              tile.type === "fast-forward" &&
-                              status === "LOCKED"
-                            ) {
-                              void router.push(
-                                `/lesson?fast-forward=${unit.unitNumber}`
-                              );
-                              return;
-                            }
                             setSelectedTile(i);
                           }}
                         >
