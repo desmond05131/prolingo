@@ -13,23 +13,23 @@ export function useStatsState() {
     }, []);
 
     const getStats = () => {
-        api
-            .get("/api/stats/")
-            .then((res) => res.data)
-            .then((data) => {
-                const stats = Array.isArray(data) ? data[0] : data;
-                console.log(stats);
+        // api
+        //     .get("/api/stats/")
+        //     .then((res) => res.data)
+        //     .then((data) => {
+        //         const stats = Array.isArray(data) ? data[0] : data;
+        //         console.log(stats);
 
-                if (!stats) {
-                    return
-                }
+        //         if (!stats) {
+        //             return
+        //         }
 
-                setLevel(stats.level || 1);
-                setXp(stats.xp || 0);
-                setStreak(stats.streak || 0);
-                setEnergy(stats.energy || 10);
-            })
-            .catch((err) => alert(err));
+        //         setLevel(stats.level || 1);
+        //         setXp(stats.xp || 0);
+        //         setStreak(stats.streak || 0);
+        //         setEnergy(stats.energy || 10);
+        //     })
+        //     .catch((err) => alert(err));
     };
 
     return {
