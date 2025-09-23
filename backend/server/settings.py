@@ -39,6 +39,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 } #configuration for JWT tokens to work properly
 
 SIMPLE_JWT = {
@@ -65,6 +66,8 @@ INSTALLED_APPS = [
     'gamification',
     'feedback',
     'premium',
+    
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -160,3 +163,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 # Use custom user model
 AUTH_USER_MODEL = 'users.User'
+
+SPECTACULAR_DEFAULTS = {
+    'SCHEMA_PATH_PREFIX': '/api'
+}
