@@ -90,3 +90,22 @@ export const units = [
     ],
   },
 ];
+
+export const questions = [
+  {
+    id: 1,
+    question_type: "mcq",
+    question_text: "What is the capital of France?",
+    options: [
+      { id: 1, option_text: "Berlin" },
+      { id: 2, option_text: "Madrid" },
+      { id: 3, option_text: "Paris" },
+      { id: 4, option_text: "Rome" },
+    ],
+  },
+  {
+    id: 1,
+    question_type: "fill",
+    question_text: "What is the capital of France?",
+  },
+];
