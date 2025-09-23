@@ -5,15 +5,15 @@ function Login() {
     return <LoginForm route="/api/token/" />
 }
 
-const OriginalLogin = Login
+// const OriginalLogin = Login
 
-Login = function LoginWithRegisterButton() {
-    return (
-        <>
-            <OriginalLogin />
-            <RegisterButton />
-        </>
-    )
-}
+// Login = function LoginWithRegisterButton() {
+//     return (
+//         <>
+//             <OriginalLogin />
+//             <RegisterButton />
+//         </>
+//     )
+// }
 
 export default Login

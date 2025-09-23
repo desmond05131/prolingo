@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+/* Optional: enable class-based dark mode variants like `dark:bg-*` */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Tailwind v4: declare theme tokens via @theme so utility classes are generated */
+@theme {
+  /* semantic colors */
+  --color-background: hsl(0 0% 100%);
+  --color-foreground: hsl(222.2 84% 4.9%);
+
+	--color-primary: #C6E0FF;
+	--color-primary-foreground: #0A2540;
+	
+	--color-secondary: hsl(210 40% 96.1%);
+  --color-secondary-foreground: hsl(222.2 47.4% 11.2%);
+
+  --color-muted: hsl(210 40% 96.1%);
+  --color-muted-foreground: hsl(215.4 16.3% 46.9%);
+
+  --color-accent: hsl(210 40% 96.1%);
+  --color-accent-foreground: hsl(222.2 47.4% 11.2%);
+
+  /* the ones you asked about */
+  --color-destructive: hsl(0 84% 60%);
+  --color-destructive-foreground: hsl(210 40% 98%);
+
+  --color-border: hsl(214.3 31.8% 91.4%);
+  --color-input: hsl(214.3 31.8% 91.4%);
+  --color-ring: hsl(222.2 84% 4.9%);
+
+  --color-progress-background: hsl(224, 100%, 50%);
+
+  /* radius token (works with rounded-* via arbitrary values if you want) */
+  --radius: .5rem;
+}
+
+/* Dark theme overrides (only used if you add `.dark` to <html> or <body>) */
+.dark {
+  --color-background: hsl(222.2 84% 4.9%);
+  --color-foreground: hsl(210 40% 98%);
+
+  --color-primary: hsl(210 40% 98%);
+  --color-primary-foreground: hsl(222.2 47.4% 11.2%);
+
+  --color-secondary: hsl(217.2 32.6% 17.5%);
+  --color-secondary-foreground: hsl(210 40% 98%);
+
+  --color-muted: hsl(217.2 32.6% 17.5%);
+  --color-muted-foreground: hsl(215 20.2% 65.1%);
+
+  --color-accent: hsl(217.2 32.6% 17.5%);
+  --color-accent-foreground: hsl(210 40% 98%);
+
+  --color-destructive: hsl(0 62.8% 30.6%);
+  --color-destructive-foreground: hsl(210 40% 98%);
+
+  --color-border: hsl(217.2 32.6% 17.5%);
+  --color-input: hsl(217.2 32.6% 17.5%);
+  --color-ring: hsl(212.7 26.8% 83.9%);
+
+  --color-progress-background: hsl(224, 100%, 50%);
+}
+
+/* (Nice to have) apply tokens globally */
+@layer base {
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground; }
+}
