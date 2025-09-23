@@ -1,4 +1,3 @@
-import React from "react"
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import Login from "./pages/Login"
 import Register from "./pages/Register"
@@ -20,7 +19,6 @@ import AccessCourses from "./pages/Courses"
 // import AttemptTest from "./pages/AttemptTest"
 import NotFound from "./pages/NotFound"
 import ProtectedRoute from "./components/ProtectedRoute"
-import { Toaster } from "@/components/ui/toaster"
 import LeaderboardHome from "./pages/Home/Leaderboard"
 import AchievementsHome from "./pages/Home/Achievements"
 import SettingsHome from "./pages/Home/Settings"
@@ -39,7 +37,6 @@ function RegisterAndLogout() {
 
 function App() {
   return (
-    <div className="dark">
     <BrowserRouter>
       <Routes>
         <Route
@@ -77,14 +74,10 @@ function App() {
         <Route path="/user-answers" element={<ProtectedRoute><UserAnswers /></ProtectedRoute>} />
         <Route path="/course/:courseId" element={<ProtectedRoute><CourseDetail /></ProtectedRoute>} />
         <Route path="/access-courses" element={<ProtectedRoute><AccessCourses /></ProtectedRoute>} />
-          {/* <Route path="/leaderboards" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} /> */}
-          {/* <Route path="/achievements" element={<ProtectedRoute><AchievementPage /></ProtectedRoute>} /> */}
         {/* <Route path="/attempt-test/:courseId/:chapterId/:testId" element={<ProtectedRoute><AttemptTest /></ProtectedRoute>} /> */}
         <Route path="*" element={<NotFound />}></Route>
       </Routes>
-      <Toaster />
-      </BrowserRouter>
-      </div>
+    </BrowserRouter>
   )
 }
 
