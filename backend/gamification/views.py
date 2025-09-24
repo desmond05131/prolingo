@@ -1,5 +1,5 @@
 from rest_framework import generics, status
-from rest_framework.permissions import IsAuthenticated, BasePermission, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from django.utils import timezone
@@ -10,37 +10,7 @@ from .serializers import (
     EnergySerializer, RewardsSerializer
 )
 import json
-
-
-
-class IsOwnerOrAdmin(BasePermission):
-    """
-    Custom permission to only allow owners of an object to view/edit it,
-    or admins to view/edit any gamification data
-    """
-    
-    def has_permission(self, request, view):
-        return request.user and request.user.is_authenticated
-    
-    def has_object_permission(self, request, view, obj):
-        # Allow admins to access any gamification data
-        if getattr(request.user, 'role', None) == 'admin' or request.user.is_staff:
-            return True
-        
-        # Check if the user owns the gamification data
-        return obj.user == request.user
-
-class IsAdminRole(BasePermission):
-    """
-    Custom permission to only allow admin users
-    """
-    
-    def has_permission(self, request, view):
-        return bool(
-            request.user and 
-            request.user.is_authenticated and 
-            (getattr(request.user, "role", None) == "admin" or request.user.is_staff)
-        )
+from users.permissions import IsAdminRole, IsOwnerOrAdmin
 
 # Leaderboard Views
 class GetLeaderboardView(generics.ListAPIView):
