@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'gameinfo',
     'streaks',
     'achievements',
+    'courses',
     
     'drf_spectacular',
 ]

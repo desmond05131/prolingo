@@ -22,6 +22,9 @@ urlpatterns = [
     # Achievements (admin + client)
     path("api/achievements/", include("achievements.urls.admin")),
     path("api/client/achievements/", include("achievements.urls.client")),
+    # Courses (admin + client)
+    path("api/courses/", include("courses.urls.admin")),
+    path("api/client/courses/", include("courses.urls.client")),
     # path("api/notes/", include("notes.urls")),
     # path("api/courses/", include("courses.urls")),
     # path("api/stats/", include("stats.urls")),
