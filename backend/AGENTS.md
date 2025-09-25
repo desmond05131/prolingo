@@ -120,7 +120,7 @@ urlpatterns = [
 3) **Views** &rarr; implement in `views/admin/` and `views/client/`.
 4) **URLs** &rarr; register routes in `urls/admin/` and `urls/client/`.
 5) Run:
-   - python manage.py makemigrations &amp;&amp; python manage.py migrate
+   - python manage.py makemigrations
 
 Definition of Done:
 - Endpoints available under `/api/...` and `/api/client/...`.
