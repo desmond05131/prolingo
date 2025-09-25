@@ -5,7 +5,7 @@ class UserTestAnswer(models.Model):
     user_test_answer_id = models.AutoField(primary_key=True)
     user_test = models.ForeignKey("courses.UserTest", on_delete=models.CASCADE, related_name="answers")
     given_answer_text = models.TextField()
-    is_correct = models.BooleanField(default=False)
+    is_correct = models.BooleanField()
 
     class Meta:
         ordering = ["-user_test_answer_id"]

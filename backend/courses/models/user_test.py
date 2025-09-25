@@ -7,7 +7,7 @@ class UserTest(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="user_tests")
     test = models.ForeignKey("courses.Test", on_delete=models.CASCADE, related_name="user_tests")
     attempt_date = models.DateTimeField(auto_now_add=True)
-    time_spent = models.PositiveIntegerField(help_text="Time spent in seconds", null=True, blank=True)
+    time_spent = models.PositiveIntegerField(help_text="Time spent in seconds")
 
     class Meta:
         ordering = ["-user_test_id"]

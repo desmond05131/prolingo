@@ -10,7 +10,7 @@ class Feedback(models.Model):
         on_delete=models.CASCADE,
         related_name="feedback_created",
     )
-    created_date = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -18,10 +18,10 @@ class Feedback(models.Model):
         null=True,
         blank=True,
     )
-    updated_date = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["-feedback_id"]
+        ordering = ["-updated_at"]
         indexes = [
             models.Index(fields=["created_by"], name="idx_feedback_created_by"),
             models.Index(fields=["updated_by"], name="idx_feedback_updated_by"),

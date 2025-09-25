@@ -28,7 +28,7 @@ class PremiumSubscription(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["-subscription_id"]
+        ordering = ["-updated_at"]
         indexes = [
             models.Index(fields=["user"], name="idx_premium_user"),
             models.Index(fields=["type"], name="idx_premium_type"),
