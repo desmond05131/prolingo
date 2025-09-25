@@ -9,5 +9,6 @@ class AdminTestSerializer(serializers.ModelSerializer):
             "chapter",
             "passing_score",
             "order_index",
+            "title",
         ]
         read_only_fields = ["test_id"]

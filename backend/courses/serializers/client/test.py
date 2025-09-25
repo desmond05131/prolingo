@@ -9,5 +9,6 @@ class ClientTestSerializer(serializers.ModelSerializer):
             "chapter_id",
             "passing_score",
             "order_index",
+            "title",
         ]
         read_only_fields = fields

@@ -6,6 +6,7 @@ class Test(models.Model):
     chapter = models.ForeignKey("courses.Chapter", on_delete=models.CASCADE, related_name="tests")
     passing_score = models.PositiveIntegerField(null=True, blank=True)
     order_index = models.PositiveIntegerField()
+    title = models.CharField(max_length=255, help_text="Display title for the test", default="Untitled Test")
 
     class Meta:
         ordering = ["chapter_id", "order_index", "test_id"]
@@ -17,4 +18,4 @@ class Test(models.Model):
         ]
 
     def __str__(self):
-        return f"Test<{self.test_id} ch={self.chapter_id}>"
+        return f"Test<{self.test_id} ch={self.chapter_id} title='{self.title}'>"
