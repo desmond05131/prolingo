@@ -11,7 +11,9 @@ class AdminPremiumSubscriptionSerializer(serializers.ModelSerializer):
             "type",
             "start_date",
             "end_date",
-            "tier",
+            "status",
+            "is_renewable",
+            "amount",
             "created_at",
             "updated_at",
         ]
