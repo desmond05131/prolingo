@@ -16,6 +16,9 @@ urlpatterns = [
     path("api-auth/", include("rest_framework.urls")),
 
     path("api/users/", include("users.urls")),
+    # Game info (admin + client)
+    path("api/gameinfo/", include("gameinfo.urls.admin")),
+    path("api/client/gameinfo/", include("gameinfo.urls.client")),
     # Achievements (admin + client)
     path("api/achievements/", include("achievements.urls.admin")),
     path("api/client/achievements/", include("achievements.urls.client")),

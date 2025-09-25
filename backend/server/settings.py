@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'corsheaders',
 
     'users',
+    'gameinfo',
     'achievements',
     
     'drf_spectacular',
