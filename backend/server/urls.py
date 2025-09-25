@@ -1,9 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from django.contrib import admin
-from django.urls import path, include
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenRefreshView
 from django.http import HttpResponse
 from users.views import CustomTokenObtainPairView
 from drf_spectacular.views import SpectacularRedocView, SpectacularSwaggerView
@@ -19,6 +16,9 @@ urlpatterns = [
     # Game info (admin + client)
     path("api/gameinfo/", include("gameinfo.urls.admin")),
     path("api/client/gameinfo/", include("gameinfo.urls.client")),
+    # Daily streaks (admin + client)
+    path("api/streaks/", include("streaks.urls.admin")),
+    path("api/client/streaks/", include("streaks.urls.client")),
     # Achievements (admin + client)
     path("api/achievements/", include("achievements.urls.admin")),
     path("api/client/achievements/", include("achievements.urls.client")),

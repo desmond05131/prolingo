@@ -60,7 +60,9 @@ INSTALLED_APPS = [
     'corsheaders',
 
     'users',
+    # Obsolete apps removed (were under obsolete/ directory): notes, courses, stats, gamification, feedback, premium
     'gameinfo',
+    'streaks',
     'achievements',
     
     'drf_spectacular',

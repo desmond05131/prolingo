@@ -4,7 +4,7 @@ from .models import User, UserSettings
 from .serializers import UserSerializer, UserSettingsSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from stats.models import Stats
+from gameinfo.models import UserGameInfos
 from .permissions import IsAdminRole
 
 class CreateUserView(generics.CreateAPIView):
@@ -49,11 +49,6 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         user = User.objects.get(username=request.data.get("username"))
-        try:
-            stats = user.stats
-            print(stats, user, response, request, args, kwargs)
-            stats.reset_energy()
-            stats.check_streak()
-        except Stats.DoesNotExist:
-            Stats.objects.create(user=user)
+        # Ensure game info exists on login
+        gameinfo, _ = UserGameInfos.objects.get_or_create(user=user)
         return response

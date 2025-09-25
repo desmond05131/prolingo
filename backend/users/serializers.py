@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import User, UserSettings
+from gameinfo.models import UserGameInfos
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -24,8 +25,9 @@ class UserSerializer(serializers.ModelSerializer):
         if password:
             user.set_password(password)
         user.save()
-        # create default settings
+        # create default related models
         UserSettings.objects.create(user=user)
+        UserGameInfos.objects.create(user=user)
         return user
 
 
