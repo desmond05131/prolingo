@@ -13,18 +13,8 @@ from .serializers import (
     CourseSerializer, ChapterSerializer, TestSerializer, QuestionSerializer, OptionSerializer,
     UserCourseSerializer, UserChapterSerializer, UserTestResultSerializer, UserAnswerSerializer
 )
-from users.views import IsAdminRole
+from users.permissions import IsAdminRole, IsOwnerOrAdmin
 from users.models import User
-
-class IsOwnerOrAdmin(IsAuthenticated):
-    def has_object_permission(self, request, view, obj):
-        if getattr(request.user, 'role', None) == 'admin' or request.user.is_staff:
-            return True
-        # Courses: owner check
-        if isinstance(obj, Course):
-            return obj.created_by == request.user
-        # fallback
-        return getattr(obj, 'user', None) == request.user
 
 # Course CRUD Views
 class CourseListView(generics.ListAPIView):

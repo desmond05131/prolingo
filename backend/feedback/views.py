@@ -7,22 +7,7 @@ from django.utils import timezone
 
 from .models import Feedback, AdminFeedbackResponse, AdminAction
 from .serializers import FeedbackSerializer, AdminFeedbackResponseSerializer, AdminActionSerializer
-
-# simple admin permission
-class IsAdminRole(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and (getattr(request.user, "role", None) == "admin" or request.user.is_staff))
-
-class IsOwnerOrAdmin(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        if getattr(request.user, "role", None) == "admin" or request.user.is_staff:
-            return True
-        # supports Feedback and AdminAction objects which have 'user' or 'admin' relations
-        if hasattr(obj, "user"):
-            return obj.user == request.user
-        if hasattr(obj, "admin"):
-            return obj.admin == request.user
-        return False
+from users.permissions import IsAdminRole, IsOwnerOrAdmin
 
 # Feedback endpoints
 class CreateFeedbackView(generics.CreateAPIView):

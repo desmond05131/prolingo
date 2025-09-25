@@ -6,23 +6,7 @@ from datetime import timedelta
 
 from .models import PremiumSubscription, PremiumFeature
 from .serializers import PremiumSubscriptionSerializer, PremiumFeatureSerializer
-
-# simple admin check used in other apps as well
-class IsAdminRole(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and (getattr(request.user, "role", None) == "admin" or request.user.is_staff))
-
-class IsOwnerOrAdmin(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        # obj can be PremiumSubscription or PremiumFeature
-        if getattr(request.user, "role", None) == "admin" or request.user.is_staff:
-            return True
-        # subscription has user; feature has subscription.user
-        if hasattr(obj, 'user'):
-            return obj.user == request.user
-        if hasattr(obj, 'subscription'):
-            return obj.subscription.user == request.user
-        return False
+from users.permissions import IsAdminRole, IsOwnerOrAdmin
 
 # Subscriptions
 class CreateSubscriptionView(generics.CreateAPIView):
