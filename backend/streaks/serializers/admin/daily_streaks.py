@@ -8,5 +8,6 @@ class AdminDailyStreakSerializer(serializers.ModelSerializer):
             "daily_streak_id",
             "user",
             "daily_streak_date",
+            "is_streak_saver",
         ]
         read_only_fields = ["daily_streak_id"]

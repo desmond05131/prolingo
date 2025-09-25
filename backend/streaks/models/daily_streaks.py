@@ -10,6 +10,7 @@ class DailyStreak(models.Model):
         related_name="daily_streaks",
     )
     daily_streak_date = models.DateField(default=timezone.now)
+    is_streak_saver = models.BooleanField(default=False, help_text="Whether a streak saver was used for this day")
 
     class Meta:
         verbose_name = "Daily Streak"
@@ -23,4 +24,4 @@ class DailyStreak(models.Model):
         ordering = ["-daily_streak_date", "-daily_streak_id"]
 
     def __str__(self):
-        return f"DailyStreak<{self.user_id}:{self.daily_streak_date}>"
+        return f"DailyStreak<{self.user_id}:{self.daily_streak_date} saver={self.is_streak_saver}>"

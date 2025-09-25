@@ -7,5 +7,6 @@ class ClientDailyStreakSerializer(serializers.ModelSerializer):
         fields = [
             "daily_streak_id",
             "daily_streak_date",
+            "is_streak_saver",
         ]
-        read_only_fields = ["daily_streak_id", "daily_streak_date"]
+        read_only_fields = ["daily_streak_id", "daily_streak_date", "is_streak_saver"]
