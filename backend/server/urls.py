@@ -16,12 +16,15 @@ urlpatterns = [
     path("api-auth/", include("rest_framework.urls")),
 
     path("api/users/", include("users.urls")),
-    path("api/notes/", include("notes.urls")),
-    path("api/courses/", include("courses.urls")),
-    path("api/stats/", include("stats.urls")),
-    path('api/gamification/', include('gamification.urls')),
-    path("api/feedback/", include("feedback.urls")),
-    path("api/premium/", include("premium.urls")),
+    # Achievements (admin + client)
+    path("api/achievements/", include("achievements.urls.admin")),
+    path("api/client/achievements/", include("achievements.urls.client")),
+    # path("api/notes/", include("notes.urls")),
+    # path("api/courses/", include("courses.urls")),
+    # path("api/stats/", include("stats.urls")),
+    # path('api/gamification/', include('gamification.urls')),
+    # path("api/feedback/", include("feedback.urls")),
+    # path("api/premium/", include("premium.urls")),
 
     path("", lambda request: HttpResponse("Welcome to Prolingo API"), name="home"),
     

@@ -60,12 +60,7 @@ INSTALLED_APPS = [
     'corsheaders',
 
     'users',
-    'notes',
-    'courses',
-    'stats',
-    'gamification',
-    'feedback',
-    'premium',
+    'achievements',
     
     'drf_spectacular',
 ]
