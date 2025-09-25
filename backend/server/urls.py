@@ -25,6 +25,12 @@ urlpatterns = [
     # Courses (admin + client)
     path("api/courses/", include("courses.urls.admin")),
     path("api/client/courses/", include("courses.urls.client")),
+    # Feedback (admin + client)
+    path("api/feedback/", include("feedback.urls.admin")),
+    path("api/client/feedback/", include("feedback.urls.client")),
+    # Premium subscriptions (admin + client)
+    path("api/premium/", include("premium.urls.admin")),
+    path("api/client/premium/", include("premium.urls.client")),
     # path("api/notes/", include("notes.urls")),
     # path("api/courses/", include("courses.urls")),
     # path("api/stats/", include("stats.urls")),
