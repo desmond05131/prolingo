@@ -27,6 +27,8 @@ import SettingsHome from "./pages/Home/Settings"
 import LearnHome from "./pages/Home/Learn"
 import ProfileHome from "./pages/Home/Profile"
 import AttemptTest from "./pages/Learn/AttemptTest"
+import TestResult from "./pages/Learn/TestResult"
+import SubscriptionHome from "./pages/Home/Subscription"
 
 function Logout() {
   localStorage.clear()
@@ -59,6 +61,7 @@ function App() {
         <Route path="/leaderboards" element={<ProtectedRoute><LeaderboardHome /></ProtectedRoute>} />
         <Route path="/achievements" element={<ProtectedRoute><AchievementsHome /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><SettingsHome /></ProtectedRoute>} />
+        <Route path="/subscription" element={<ProtectedRoute><SubscriptionHome /></ProtectedRoute>} />
         <Route path="/learn" element={<ProtectedRoute><LearnHome /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><ProfileHome /></ProtectedRoute>} />
         
@@ -82,6 +85,7 @@ function App() {
           {/* <Route path="/leaderboards" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} /> */}
           {/* <Route path="/achievements" element={<ProtectedRoute><AchievementPage /></ProtectedRoute>} /> */}
         <Route path="/attempt-test/:courseId/:chapterId/:testId" element={<ProtectedRoute><AttemptTest /></ProtectedRoute>} />
+        <Route path="/attempt-test/:courseId/:chapterId/:testId/result" element={<ProtectedRoute><TestResult /></ProtectedRoute>} />
         <Route path="/lesson" element={<ProtectedRoute><AttemptTest /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />}></Route>
       </Routes>

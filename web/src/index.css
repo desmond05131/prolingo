@@ -9,8 +9,19 @@
   --color-background: hsl(0 0% 100%);
   --color-foreground: hsl(222.2 84% 4.9%);
 
-	--color-primary: #C6E0FF;
+	--color-primary: hsl(199 92% 54%);
 	--color-primary-foreground: #0A2540;
+
+  --color-primary-50:  hsl(201 88% 97%);
+  --color-primary-100: hsl(198 88% 90%);
+  --color-primary-200: hsl(199 90% 80%);
+  --color-primary-300: hsl(199 91% 70%);
+  --color-primary-400: hsl(199 91% 60%);
+  --color-primary-500: hsl(199 92% 54%); /* your base */
+  --color-primary-600: hsl(199 92% 45%);
+  --color-primary-700: hsl(199 93% 38%);
+  --color-primary-800: hsl(199 93% 32%);
+  --color-primary-900: hsl(199 93% 24%);
 	
 	--color-secondary: hsl(210 40% 96.1%);
   --color-secondary-foreground: hsl(222.2 47.4% 11.2%);
@@ -40,8 +51,19 @@
   --color-background: hsl(222.2 84% 4.9%);
   --color-foreground: hsl(210 40% 98%);
 
-  --color-primary: hsl(210 40% 98%);
+  --color-primary: hsl(199 92% 54%);
   --color-primary-foreground: hsl(222.2 47.4% 11.2%);
+
+  --color-primary-50:  hsl(201 88% 97%);
+  --color-primary-100: hsl(198 88% 90%);
+  --color-primary-200: hsl(199 90% 80%);
+  --color-primary-300: hsl(199 91% 70%);
+  --color-primary-400: hsl(199 91% 60%);
+  --color-primary-500: hsl(199 92% 54%); /* your base */
+  --color-primary-600: hsl(199 92% 45%);
+  --color-primary-700: hsl(199 93% 38%);
+  --color-primary-800: hsl(199 93% 32%);
+  --color-primary-900: hsl(199 93% 24%);
 
   --color-secondary: hsl(217.2 32.6% 17.5%);
   --color-secondary-foreground: hsl(210 40% 98%);

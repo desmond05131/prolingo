@@ -1,6 +1,8 @@
 import React from 'react';
 import { useStatsState } from './useStatsState.jsx';
 import './Stats.css';
+import { Popover, PopoverTrigger, PopoverContent, PopoverArrow } from '@/components/ui/popover.jsx';
+import StreakPopover from './StreakPopover.jsx';
 
 /*
  Stat Bar Component
@@ -15,7 +17,7 @@ import './Stats.css';
 
 // Inline SVG icons (small, self-contained)
 const FireIcon = ({ className = "w-5 h-5" }) => (
-  <img className="fire" alt="Fire" src="/assets/Streak.svg" />
+  <img className={`fire ${className}`} alt="Fire" src="/assets/Streak.svg" />
   // <svg viewBox="0 0 24 24" className={className} fill="currentColor">
   // 	<path d="M12 2c.8 2.7-.7 4.1-2 5.6-1.1 1.3-2 2.4-2 4.4 0 2.9 2.3 5 5 5s5-2.1 5-5c0-2.2-.6-3.6-1.3-4.9-.6-1.2-1.2-2.3-1.2-3.7 0-.7.1-1.3.3-1.9C18.4 4.2 20 7.2 20 11c0 5-3.9 9-8 9s-8-4-8-9c0-3.6 1.9-6.3 4.3-8.2C9.3 1.6 10.5 1 11.7 1c.1.3.2.6.3 1z" />
   // </svg>
@@ -79,10 +81,18 @@ export const Stats = ({ className = '' }) => {
 		>
 			{/* Header Badges */}
 					<div className="pointer-events-auto flex items-center gap-6 mt-2 pr-1 select-none">
-						<div className="flex items-center gap-2">
-							<FireIcon className="w-7 h-7 text-orange-400" />
-							<span className="text-2xl font-bold text-orange-300 leading-none" aria-label="Streak value">{streak}</span>
-						</div>
+						<Popover>
+							<PopoverTrigger asChild>
+								<button type="button" className="flex items-center gap-2 focus:outline-none focus-visible:ring-1 focus-visible:ring-amber-300 rounded-md">
+									<FireIcon className="w-7 h-7 text-orange-400" />
+									<span className="text-2xl font-bold text-orange-300 leading-none" aria-label="Streak value">{streak}</span>
+								</button>
+							</PopoverTrigger>
+							<PopoverContent align="end" className="w-auto" sideOffset={8}>
+								<StreakPopover />
+								<PopoverArrow className="fill-neutral-900/95" />
+							</PopoverContent>
+						</Popover>
 						<div className="flex items-center gap-2">
 							<span className="text-yellow-300 text-3xl leading-none">⚡</span>
 							<span className="text-2xl font-bold text-yellow-200 leading-none" aria-label="Energy value">{energy}</span>

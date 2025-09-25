@@ -1,7 +1,11 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import api from '@/api';
 import { questions as MockQuestions } from '@/constants';
+import ExitButton from '@/components/Test/ExitButton';
+import ProgressCard from '@/components/Test/ProgressCard';
+import TimerCard from '@/components/Test/TimerCard';
+import QuestionCard from '@/components/Test/QuestionCard';
+import FloatingActionButton from '@/components/Test/FloatingActionButton';
 
 /**
  * AttemptTest Page
@@ -17,9 +21,9 @@ export default function AttemptTest() {
 	const { courseId, chapterId, testId } = useParams();
 
 	// Data state
-	const [questions, setQuestions] = useState(MockQuestions); // Each question may include options array
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState('');
+  const [questions] = useState(MockQuestions); // Each question may include options array
+  const [loading] = useState(false); // Future: fetch
+  const [error] = useState(''); // Future: fetch
 
 	// Progress & interaction state
 	const [currentIndex, setCurrentIndex] = useState(0);
@@ -69,11 +73,7 @@ export default function AttemptTest() {
 	// 	fetchQuestions();
 	// }, [fetchQuestions]);
 
-	const formatTime = (totalSec) => {
-		const m = Math.floor(totalSec / 60);
-		const s = totalSec % 60;
-		return `${m}:${s.toString().padStart(2, '0')}`;
-	};
+  // Moved time formatting into TimerCard component
 
 	const currentQuestion = questions[currentIndex];
 	const total = questions.length;
@@ -107,133 +107,62 @@ export default function AttemptTest() {
 		};
 		console.log('Attempt submission payload (placeholder):', payload);
 		setHasSubmitted(true);
-		// Navigate back after a brief delay or directly
-		setTimeout(() => navigate('/learn'), 1200);
+		// Navigate to result page with state
+		navigate(`/attempt-test/${courseId}/${chapterId}/${testId}/result`, {
+			state: { questions, answers, elapsedSeconds }
+		});
 	};
 
-	const handleExit = () => {
-		if (!hasSubmitted) {
-			const remaining = total - answeredCount;
-			const confirmExit = window.confirm(`You have ${remaining} unanswered question(s). Exit anyway?`);
-			if (!confirmExit) return;
-		}
-		navigate('/learn');
-	};
+  const handleExit = () => {
+    if (!hasSubmitted) {
+      const remaining = total - answeredCount;
+      const confirmExit = window.confirm(`You have ${remaining} unanswered question(s). Exit anyway?`);
+      if (!confirmExit) return;
+    }
+    navigate('/learn');
+  };
 
-	const progressPercent = total > 0 ? (answeredCount / total) * 100 : 0;
+  // Progress percentage now computed inside ProgressCard; option grid handled in MCQOptions
 
-	return (
-		<div className="min-h-screen flex flex-col text-slate-100 relative p-4 bg-[#0f1115]">
-			{/* Header */}
-			<div className="flex items-start justify-between mb-4 flex-wrap gap-3">
-				<div className="flex items-start gap-3">
-					{/* Square Exit Button - Flat 2D */}
-					<button
-						onClick={handleExit}
-						className="h-11 w-11 flex items-center justify-center rounded-sm bg-[#1d232c] border-2 border-[#3a4554] hover:bg-[#242c36] active:translate-y-[2px] text-2xl font-bold text-slate-200"
-						aria-label="Exit test"
-					>
-						×
-					</button>
-					{/* Progress Card - Flat */}
-					<div className="px-4 py-3 rounded-sm bg-[#1d232c] w-60 select-none">
-						<div className="flex items-center justify-between mb-2">
-							<span className="text-xs font-semibold tracking-wide text-white uppercase">Progress</span>
-							<span className="text-xs font-bold text-emerald-400">{answeredCount}/{total}</span>
-						</div>
-						<div className="h-4 border-2 border-[#3a4554] bg-[#14181f] flex">
-							<div
-								className="bg-emerald-500"
-								style={{ width: `${progressPercent}%` }}
-							/>
-						</div>
-					</div>
-				</div>
-				{/* Timer Card - Flat */}
-				<div className="px-4 py-3 rounded-sm bg-[#1d232c] min-w-[150px] flex items-center gap-3 select-none">
-					<div className="flex h-9 w-9 items-center justify-center rounded-sm bg-[#14181f] border-2 border-[#3a4554] text-emerald-400">
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-							<circle cx="12" cy="12" r="9" />
-							<polyline points="12 7 12 12 16 14" />
-						</svg>
-					</div>
-					<div className="flex flex-col">
-						<span className="text-xs font-semibold tracking-wide text-slate-300 uppercase">Time</span>
-						<span className="font-mono text-lg leading-none pt-1 text-slate-100">{formatTime(elapsedSeconds)}</span>
-					</div>
-				</div>
-			</div>
+  return (
+    <div className="min-h-screen flex flex-col text-slate-100 relative p-4 bg-[#0f1115]">
+      {/* Header */}
+      <div className="flex items-start justify-between mb-4 flex-wrap gap-3">
+        <div className="flex items-start gap-3">
+          <ExitButton onExit={handleExit} remainingUnanswered={total - answeredCount} />
+          <ProgressCard answered={answeredCount} total={total} />
+        </div>
+        <TimerCard elapsedSeconds={elapsedSeconds} />
+      </div>
 
-			{/* Body */}
-			<div className="flex-1 flex flex-col items-center justify-start">
-				{loading && (
-					<div className="mt-20 animate-pulse text-slate-400">Loading questions...</div>
-				)}
-				{!loading && error && (
-					<div className="text-red-400 mt-8">{error}</div>
-				)}
-				{!loading && !error && currentQuestion && (
-					<div className="w-full max-w-3xl rounded-sm border-2 border-[#3a4554] bg-[#1b2027] p-6">
-						<div className="flex items-start justify-between mb-4">
-							<h2 className="text-xl font-semibold">Question {currentIndex + 1}</h2>
-							<span className="text-sm px-2 py-1 rounded bg-slate-700 text-slate-300 uppercase tracking-wide">{currentQuestion.question_type}</span>
-						</div>
-						<p className="text-slate-100 leading-relaxed mb-6 whitespace-pre-line">{currentQuestion.question_text}</p>
+      {/* Body */}
+      <div className="flex-1 flex items-center justify-center">
+        {loading && (
+          <div className="mt-20 animate-pulse text-slate-400">Loading questions...</div>
+        )}
+        {!loading && error && <div className="text-red-400 mt-8">{error}</div>}
+        {!loading && !error && currentQuestion && (
+          <QuestionCard
+            question={currentQuestion}
+            index={currentIndex}
+            answers={answers}
+            onAnswerChange={handleAnswerChange}
+          />
+        )}
+        {!loading && !error && !currentQuestion && (
+          <div className="mt-20 text-slate-400">No questions to display.</div>
+        )}
+      </div>
 
-						{currentQuestion.question_type === 'mcq' && (
-							<div className="space-y-3">
-								{currentQuestion.options?.length ? currentQuestion.options.map((opt, idx) => {
-									const selected = answers[currentQuestion.id] === String(opt.id);
-									return (
-										<button
-											key={opt.id}
-											type="button"
-											onClick={() => handleAnswerChange(currentQuestion.id, String(opt.id))}
-											className={`w-full text-left px-4 py-3 rounded-sm border-2 font-medium tracking-wide focus:outline-none active:translate-y-[2px] ${selected ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-[#14181f] text-slate-200 border-[#3a4554] hover:bg-[#1f2630]'}`}
-										>
-											<span className="mr-3 text-slate-300">{String.fromCharCode(65 + idx)}.</span>
-											<span>{opt.option_text}</span>
-										</button>
-									);
-								}) : (
-									<div className="text-slate-400 italic">No options available for this question.</div>
-								)}
-							</div>
-						)}
-
-						{currentQuestion.question_type === 'fill' && (
-							<div className="mt-2">
-								<label className="block text-sm mb-2 text-slate-300">Your Answer</label>
-								<input
-									type="text"
-									value={answers[currentQuestion.id] || ''}
-									onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-									className="w-full px-4 py-3 rounded-sm bg-[#14181f] border-2 border-[#3a4554] focus:outline-none focus:border-emerald-500 text-slate-100" />
-							</div>
-						)}
-
-						{currentQuestion.question_type !== 'mcq' && currentQuestion.question_type !== 'fill' && (
-							<div className="text-amber-400 mt-4 text-sm">Unsupported question type in attempt UI: {currentQuestion.question_type}</div>
-						)}
-					</div>
-				)}
-				{!loading && !error && !currentQuestion && (
-					<div className="mt-20 text-slate-400">No questions to display.</div>
-				)}
-			</div>
-
-			{/* Floating Next Button */}
-			{total > 0 && (
-				<button
-					onClick={goNext}
-					disabled={!currentQuestion || !answers[currentQuestion.id]}
-					className={`fixed bottom-6 right-6 h-16 w-16 rounded-sm flex items-center justify-center text-white text-2xl font-bold border-4 active:translate-y-[3px] ${currentIndex === total - 1 ? 'bg-emerald-600 border-emerald-700' : 'bg-indigo-600 border-indigo-700'} disabled:opacity-40 disabled:cursor-not-allowed`}
-					title={currentIndex === total - 1 ? 'Submit Test' : 'Next Question'}
-				>
-					{currentIndex === total - 1 ? '✓' : '▶'}
-				</button>
-			)}
-		</div>
-	);
+      {/* Floating Next Button */}
+      {total > 0 && (
+        <FloatingActionButton
+          onClick={goNext}
+            disabled={!currentQuestion || !answers[currentQuestion.id]}
+            isLast={currentIndex === total - 1}
+        />
+      )}
+    </div>
+  );
 }
 

@@ -17,6 +17,24 @@ export const PRIMARY_COLORS = [
   "#024943", // dark teal
 ];
 
+// Mock streak check-ins for current month (ISO date strings)
+// NOTE: Replace with backend-provided data later.
+export const MOCK_STREAK_CHECKINS = (() => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  // Pretend user checked in daily for last 8 days and sporadically earlier.
+  const dates = new Set();
+  for (let i = 0; i < 8; i++) {
+    const d = new Date(year, month, today.getDate() - i);
+    dates.add(d.toISOString().slice(0, 10));
+  }
+  // Add two earlier random days this month
+  dates.add(new Date(year, month, 2).toISOString().slice(0, 10));
+  dates.add(new Date(year, month, 5).toISOString().slice(0, 10));
+  return Array.from(dates).sort();
+})();
+
 // Slightly darkened counterparts for borders (manually picked ~15-20% darker)
 const BORDER_COLORS = {
   "#E4D6A7": "#C1B58D",
@@ -100,12 +118,83 @@ export const questions = [
       { id: 1, option_text: "Berlin" },
       { id: 2, option_text: "Madrid" },
       { id: 3, option_text: "Paris" },
+      { id: 5, option_text: "Paris" },
+      { id: 6, option_text: "Paris" },
+      { id: 7, option_text: "Paris" },
+      { id: 8, option_text: "Paris" },
+      { id: 9, option_text: "Paris" },
       { id: 4, option_text: "Rome" },
+    ],
+    correct_option_id: 3,
+  },
+  {
+    id: 2,
+    question_type: "fill",
+    question_text: "What is the capital of France?",
+    correct_answer: "Paris",
+  },
+];
+
+// Mock profile + subscription data (UI only; replace with API calls later)
+export const MOCK_PROFILE = {
+  id: "user_123",
+  name: "Jane Developer",
+  email: "jane.developer@example.com",
+  avatarUrl: "/public/assets/Logo.png", // fallback asset
+  badges: [
+    // Added imageUrl for visual circular badge display in ProfileBanner
+    { id: "b1", label: "Early", color: "#E9B44C", imageUrl: "/public/assets/Achievements.svg" },
+    { id: "b2", label: "Streak", color: "#2D936C", imageUrl: "/public/assets/Streak.svg" },
+    { id: "b3", label: "Champion", color: "#CB2749", imageUrl: "/public/assets/Leaderboard.svg" },
+    { id: "b4", label: "Beta", color: "#9799CA", imageUrl: "/public/assets/Settings.svg" },
+  ],
+  subscription: {
+    plan: "Free",
+    renewsOn: null,
+  },
+};
+
+export const MOCK_SUBSCRIPTION_PLANS = [
+  { id: "free", name: "Free", price: 0, features: ["Basic lessons", "Community leaderboard"] },
+  { id: "pro", name: "Pro", price: 9.99, features: ["All lessons", "Unlimited tests", "Priority support"] },
+  { id: "team", name: "Team", price: 39.0, features: ["Team management", "Shared progress", "Reports"] },
+];
+
+// Paid subscription (single-user) upgrade plan mock data for Subscription page cards
+// Tailored to highlight benefits: more XP, streak saver, faster energy regeneration.
+export const MOCK_SUBSCRIPTION_PLANS_PAID = [
+  {
+    id: "monthly",
+    name: "Monthly",
+    cadence: "Billed monthly",
+    price: 7.99,
+    priceLabel: "$7.99/mo",
+    highlight: "Flexible access",
+    savingsNote: null,
+    perks: [
+      "+20% XP boost on lessons",
+      "1 Streak Saver per month included",
+      "Energy refills 25% faster",
+      "Access to all current & future units",
+      "Priority in new feature betas"
     ],
   },
   {
-    id: 1,
-    question_type: "fill",
-    question_text: "What is the capital of France?",
+    id: "annual",
+    name: "Annual",
+    cadence: "Billed yearly",
+    price: 79.99,
+    priceLabel: "$79.99/yr",
+    highlight: "Best value",
+    savingsNote: "Save 17% vs monthly",
+    perks: [
+      "+25% XP boost on lessons",
+      "2 Streak Savers per month included",
+      "Energy refills 35% faster",
+      "Access to all current & future units",
+      "Exclusive seasonal badge",
+      "Priority in new feature betas"
+    ],
+    featured: true,
   },
 ];
