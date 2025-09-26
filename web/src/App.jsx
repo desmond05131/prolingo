@@ -116,8 +116,8 @@ function App() {
         <Route path="/access-courses" element={<ProtectedRoute><AccessCourses /></ProtectedRoute>} />
           {/* <Route path="/leaderboards" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} /> */}
           {/* <Route path="/achievements" element={<ProtectedRoute><AchievementPage /></ProtectedRoute>} /> */}
-        <Route path="/attempt-test/:courseId/:chapterId/:testId" element={<ProtectedRoute><AttemptTest /></ProtectedRoute>} />
-        <Route path="/attempt-test/:courseId/:chapterId/:testId/result" element={<ProtectedRoute><TestResult /></ProtectedRoute>} />
+        <Route path="/attempt-test/:testId" element={<ProtectedRoute><AttemptTest /></ProtectedRoute>} />
+        <Route path="/attempt-test/:testId/result" element={<ProtectedRoute><TestResult /></ProtectedRoute>} />
         <Route path="/lesson" element={<ProtectedRoute><AttemptTest /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />}></Route>
       </Routes>

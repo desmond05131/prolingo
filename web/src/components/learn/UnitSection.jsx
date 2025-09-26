@@ -41,23 +41,37 @@ const getTileColors = ({ tileType, status, defaultColors }) => {
   }
 };
 
-const tileStatus = (units, tile, lessonsCompleted) => {
-  const lessonsPerTile = 4;
-  const tilesCompleted = Math.floor(lessonsCompleted / lessonsPerTile);
-  const tiles = units.flatMap((unit) => unit.tiles);
-  const tileIndex = tiles.findIndex((t) => t === tile);
+// Determine the status of a tile ensuring only one ACTIVE tile per unit (chapter):
+// - Tiles with completed test_id are COMPLETE
+// - The first tile with a non-completed test_id is ACTIVE
+// - All tiles after that are LOCKED
+// - Non-test tiles (no test_id) are LOCKED to respect the single ACTIVE rule
+const tileStatus = (tiles, index, completedTestIds) => {
+  const tile = tiles[index];
 
-  if (tileIndex < tilesCompleted) {
+  // Completed test tiles are COMPLETE
+  if (tile?.test_id && completedTestIds?.includes(tile.test_id)) {
     return "COMPLETE";
   }
-  if (tileIndex > tilesCompleted) {
+
+  // Find the first uncompleted test tile in this unit
+  const firstUncompletedIndex = tiles.findIndex(
+    (t) => t?.test_id && !(completedTestIds?.includes(t.test_id))
+  );
+
+  // If there is an uncompleted test tile, only that one is ACTIVE; others are LOCKED (unless COMPLETE above)
+  if (firstUncompletedIndex !== -1) {
+    if (index === firstUncompletedIndex) return "ACTIVE";
     return "LOCKED";
   }
-  return "ACTIVE";
+
+  // No uncompleted test tiles: nothing should be ACTIVE; non-completed/non-test tiles remain LOCKED
+  return "LOCKED";
 };
 
 export const UnitSection = ({ unit }) => {
   const [selectedTile, setSelectedTile] = useState(null);
+  const [selectedTileInfo, setSelectedTileInfo] = useState(null);
 
   useEffect(() => {
     const unselectTile = () => setSelectedTile(null);
@@ -67,12 +81,12 @@ export const UnitSection = ({ unit }) => {
 
   const closeTooltip = useCallback(() => setSelectedTile(null), []);
 
-  const lessonsCompleted = useBoundStore((x) => x.lessonsCompleted);
+  const completedTestIds = useBoundStore((x) => x.completedTestIds);
   const increaseLessonsCompleted = useBoundStore(
     (x) => x.increaseLessonsCompleted
   );
   const increaseLingots = useBoundStore((x) => x.increaseLingots);
-  const units = useBoundStore((x) => x.units);
+  // Note: Status logic ensures a single ACTIVE tile per unit; no need to track chapter state here
 
   return (
     <>
@@ -84,7 +98,7 @@ export const UnitSection = ({ unit }) => {
       />
       <div className="relative mb-8 mt-[67px] flex max-w-2xl flex-col items-center gap-4">
         {unit.tiles.map((tile, i) => {
-          const status = tileStatus(units, tile, lessonsCompleted);
+          const status = tileStatus(unit.tiles, i, completedTestIds);
           return (
             <div key={i}>
               {(() => {
@@ -133,6 +147,7 @@ export const UnitSection = ({ unit }) => {
                           ].join(" ")}
                           onClick={() => {
                             setSelectedTile(i);
+                            setSelectedTileInfo(tile);
                           }}
                         >
                           <TileIcon tileType={tile.type} status={status} />
@@ -172,6 +187,7 @@ export const UnitSection = ({ unit }) => {
               })()}
               <TileTooltip
                 selectedTile={selectedTile}
+                selectedTileInfo={selectedTileInfo}
                 index={i}
                 unitNumber={unit.unitNumber}
                 tilesLength={unit.tiles.length}

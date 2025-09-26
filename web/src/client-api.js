@@ -1,0 +1,197 @@
+import api from './api.js';
+
+// Non-admin API helpers for client-side features
+// All paths are relative to import.meta.env.VITE_API_URL as configured in api.js
+// Keep this focused on public/user endpoints (no /admin/* here)
+
+// --- Auth ---
+export async function login({ username, password }) {
+  const { data } = await api.post('/token/', { username, password });
+  return data; // { access, refresh }
+}
+
+export async function refreshToken(refresh) {
+  const { data } = await api.post('/token/refresh/', { refresh });
+  return data; // { access }
+}
+
+export async function registerUser(payload) {
+  const { data } = await api.post('/client/users/register/', payload);
+  return data; // created user
+}
+
+// --- Profile ---
+export async function getMyProfile(signal) {
+  const { data } = await api.get('/client/users/account/manage/', { signal });
+  return data;
+}
+
+export async function updateMyProfile(payload) {
+  const { data } = await api.patch('/client/users/account/manage/', payload);
+  return data;
+}
+
+export async function changeMyPassword(payload) {
+  // Backend may not expose this; consumers should handle 404 gracefully
+  const { data } = await api.post('/auth/change-password/', payload);
+  return data;
+}
+
+// --- Courses ---
+export async function listCourses(signal) {
+  const { data } = await api.get("/client/courses/", { signal });
+  return data;
+}
+
+export async function getCourse(courseId, signal) {
+  const { data } = await api.get(`/client/courses/${courseId}`, { signal });
+  return data;
+}
+
+// --- User Courses (client) ---
+// CRUD for the current user's course enrollments
+export async function listUserCourses(signal) {
+  const { data } = await api.get('/client/user-courses/', { signal });
+  return data; // expected array or { results: [...] }
+}
+
+export async function joinUserCourse(courseId) {
+  if (courseId === undefined || courseId === null || courseId === '') {
+    throw new Error('joinUserCourse: courseId is required');
+  }
+  const { data } = await api.post('/client/user-courses/enroll/', { course_id: courseId });
+  return data; // created user-course record
+}
+
+export async function unjoinUserCourse(userCourseId) {
+  if (!userCourseId) {
+    throw new Error('unjoinUserCourse: userCourseId is required');
+  }
+  const { data } = await api.post(`/client/user-courses/${userCourseId}/unenroll/`);
+  return data; // maybe { success: true }
+}
+
+// --- Chapters ---
+export async function listChapters(params = {}, signal) {
+  // Optional params: course_id
+  const search = new URLSearchParams(params).toString();
+  const qs = search ? `?${search}` : '';
+  const { data } = await api.get(`/client/courses/chapters/${qs}`, { signal });
+  return data;
+}
+
+export async function getUserChapter(userChapterId, signal) {
+  const { data } = await api.get(`/client/courses/user-chapters/${userChapterId}/`, { signal });
+  return data;
+}
+
+// --- Tests, Questions, Results ---
+export async function listTests(signal) {
+  const { data } = await api.get('/client/courses/tests/', { signal });
+  return data;
+}
+
+export async function listQuestions(signal) {
+  const { data } = await api.get('/client/courses/questions/', { signal });
+  return data;
+}
+
+// Fetch questions (with related choices) for a specific test
+// Endpoint: /client/questions/?test_id=xxx
+// Returns: Array of questions; each question may include an embedded choices/options array
+export async function getTestQuestions(testId, signal) {
+  if (testId === undefined || testId === null || testId === '') {
+    throw new Error('getTestQuestions: testId is required');
+  }
+  const qs = `?test_id=${encodeURIComponent(testId)}`;
+  const { data } = await api.get(`/client/questions/${qs}`, { signal });
+  return data;
+}
+
+export async function listTestResults(signal) {
+  const { data } = await api.get('/client/courses/test-results/', { signal });
+  return data;
+}
+
+export async function createTestResult(payload) {
+  const { data } = await api.post('/client/courses/test-results/create/', payload);
+  return data;
+}
+
+// --- Notes (simple demo endpoints used in AdminHome) ---
+export async function listNotes(signal) {
+  const { data } = await api.get('/notes/', { signal });
+  return data;
+}
+
+export async function createNote(payload) {
+  const { data } = await api.post('/notes/', payload);
+  return data;
+}
+
+// --- Client Learn: tests tree and user tests ---
+export async function fetchClientTestsTree(signal) {
+  const { data } = await api.get('/client/tests/tree/', { signal });
+  return data; // expected array of { course, chapter, test }
+}
+
+export async function fetchClientUserTests(signal) {
+  const { data } = await api.get('/client/user-tests/', { signal });
+  return data; // expected array of user test attempts (must include test id reference)
+}
+
+// --- Leaderboard ---
+// Returns Top 50 users by highest streak globally
+// Expected response: Array of user records or { results: [...] }
+export async function getLeaderboardTop50(signal) {
+  const { data } = await api.get('/client/leaderboard/top50/', { signal });
+  return data;
+}
+
+// --- Achievements ---
+// Endpoint returns an array of achievements
+// Schema: [{ achievement_id, reward_type, reward_amount, reward_content, reward_content_description }]
+export async function listAchievements(signal) {
+  const { data } = await api.get('/client/achievements/', { signal });
+  return data;
+}
+
+// Claim an achievement for the current user
+// Expected payload: { achievement_id }
+// Endpoint assumption based on backend conventions
+export async function claimAchievement(achievementId) {
+  if (!achievementId && achievementId !== 0) {
+    throw new Error('claimAchievement: achievementId is required');
+  }
+  const { data } = await api.post('/client/achievements/claim/', { achievement_id: achievementId });
+  return data;
+}
+
+// Named export bundle for convenience
+export const clientApi = {
+  login,
+  refreshToken,
+  registerUser,
+  getMyProfile,
+  updateMyProfile,
+  changeMyPassword,
+  listCourses,
+  getCourse,
+  listChapters,
+  getUserChapter,
+  listTests,
+  listQuestions,
+  listTestResults,
+  createTestResult,
+  listNotes,
+  createNote,
+  fetchClientTestsTree,
+  fetchClientUserTests,
+  getTestQuestions,
+  getLeaderboardTop50,
+  listAchievements,
+  claimAchievement,
+  listUserCourses,
+  joinUserCourse,
+  unjoinUserCourse,
+};

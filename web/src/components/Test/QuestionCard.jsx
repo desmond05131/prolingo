@@ -9,23 +9,23 @@ export default function QuestionCard({ question, index, answers, onAnswerChange 
       <div className="flex items-start justify-between mb-4">
         <h2 className="text-md font-semibold">Question {index + 1}</h2>
         <span className="text-sm px-2 py-1 rounded bg-slate-700 text-slate-300 uppercase tracking-wide">
-          {question.question_type}
+          {question.type}
         </span>
       </div>
       <p className="text-white my-10 text-xl leading-relaxed whitespace-pre-line">
-        {question.question_text}
+        {question.text}
       </p>
 
-      {question.question_type === 'mcq' && (
+      {question.type === 'mcq' && (
         <MCQOptions
           questionId={question.id}
-          options={question.options}
+          options={question.choices || []}
           selectedValue={answerValue}
           onChange={onAnswerChange}
         />
       )}
 
-      {question.question_type === 'fill' && (
+      {question.type === 'fill_in_blank' && (
         <div className="mt-2">
           <label className="block text-sm mb-2 text-slate-300" htmlFor={`fill-${question.id}`}>
             Your Answer
@@ -40,7 +40,7 @@ export default function QuestionCard({ question, index, answers, onAnswerChange 
         </div>
       )}
 
-      {question.question_type !== 'mcq' && question.question_type !== 'fill' && (
+      {question.type !== 'mcq' && question.type !== 'fill_in_blank' && (
         <div className="text-amber-400 mt-4 text-sm">
           Unsupported question type in attempt UI: {question.question_type}
         </div>

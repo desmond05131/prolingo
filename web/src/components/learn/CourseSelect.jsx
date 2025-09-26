@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useBoundStore, setCourses, setSelectedCourse, removeCourse } from "@/stores/stores";
 import { AddCourseModal } from "@/components/learn/AddCourseModal";
+import { listUserCourses } from "@/client-api";
+import { MOCK_USER_COURSES } from "@/constants";
 
 /*
   CourseSelect
@@ -10,15 +12,8 @@ import { AddCourseModal } from "@/components/learn/AddCourseModal";
   - Keyboard accessible (Enter/Space to open, Arrow keys to navigate, Esc to close)
 */
 
-// Temporary local sample courses (replace or populate from API/constants)
-const DEFAULT_COURSES = [
-  { id: 1, title: "C++ Foundations", description: "Basics, syntax, and first programs" },
-  { id: 2, title: "C++ OOP", description: "Classes, objects, inheritance" },
-  { id: 3, title: "Data Structures", description: "Vectors, lists, maps, and more" },
-  { id: 4, title: "Data Structures", description: "Vectors, lists, maps, and more" },
-  { id: 5, title: "Data Structures", description: "Vectors, lists, maps, and more" },
-  { id: 6, title: "Data Structures", description: "Vectors, lists, maps, and more" },
-];
+// Temporary local sample courses (fallback)
+const DEFAULT_COURSES = MOCK_USER_COURSES;
 
 export function CourseSelect() {
   const courses = useBoundStore((s) => s.courses);
@@ -32,7 +27,18 @@ export function CourseSelect() {
   // Initialize courses once if empty
   useEffect(() => {
     if (!courses || courses.length === 0) {
-      setCourses(DEFAULT_COURSES);
+      listUserCourses()
+        .then((data) => {
+          if (Array.isArray(data) && data.length > 0) {
+            setCourses(data);
+          } else {
+            setCourses(DEFAULT_COURSES);
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to load courses", err);
+          setCourses(DEFAULT_COURSES);
+        });
     }
   }, [courses]);
 
@@ -95,12 +101,33 @@ export function CourseSelect() {
     return () => window.removeEventListener("keydown", handleKey);
   }, [open, highlightIndex, courses, onSelect]);
 
-  const label = selectedCourse ? selectedCourse.title : "Select a course";
+  const label = selectedCourse ? selectedCourse.course_title : "Select a course";
 
   const handleOpenModal = () => {
     // Close dropdown before opening modal for clarity
     close();
     setOpenModal(true);
+  };
+
+  const handleModalClose = async (payload) => {
+    setOpenModal(false);
+    // If unjoin happened, force page reload as requested
+    if (payload?.unjoined) {
+      window.location.reload();
+      return;
+    }
+    // Otherwise, refetch dropdown values
+    try {
+      const data = await listUserCourses();
+      if (Array.isArray(data) && data.length > 0) {
+        setCourses(data);
+      } else {
+        setCourses(DEFAULT_COURSES);
+      }
+    } catch (err) {
+      console.error("Failed to refresh courses after modal close", err);
+      setCourses(DEFAULT_COURSES);
+    }
   };
 
   return (
@@ -137,7 +164,7 @@ export function CourseSelect() {
             className="max-h-[280px] overflow-y-auto pr-1"
           >
             {courses.length === 0 && (
-              <li className="px-3 py-2 text-sm text-gray-500">No courses available</li>
+              <li className="px-3 py-2 text-sm text-gray-500">No courses available, join a course!</li>
             )}
             {courses.map((c, idx) => {
               const isHighlighted = idx === highlightIndex;
@@ -159,8 +186,8 @@ export function CourseSelect() {
                     className="flex-1 text-left outline-none"
                   >
                     <div className="flex flex-col">
-                      <span>{c.title}</span>
-                      <span className="text-xs text-gray-500 leading-snug">{c.description}</span>
+                      <span>{c.course_title}</span>
+                      <span className="text-xs text-gray-500 leading-snug">{c.course_description}</span>
                     </div>
                   </button>
                   <button
@@ -170,7 +197,7 @@ export function CourseSelect() {
                       removeCourse(c.id);
                     }}
                     className="opacity-60 hover:opacity-100 text-gray-400 hover:text-red-600 transition-colors p-1 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
-                    aria-label={`Remove ${c.title}`}
+                    aria-label={`Remove ${c.course_title}`}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
                       <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -199,7 +226,7 @@ export function CourseSelect() {
           </div>
         </div>
       )}
-      <AddCourseModal open={openModal} onClose={() => setOpenModal(false)} />
+      <AddCourseModal open={openModal} onClose={handleModalClose} />
     </div>
   );
 }

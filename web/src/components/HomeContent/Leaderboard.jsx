@@ -1,5 +1,8 @@
 import React from "react";
 import "./Leaderboard.css";
+import LoadingIndicator from "../LoadingIndicator";
+import { getLeaderboardTop50 } from "../../client-api";
+import { MOCK_LEADERBOARD_TOP50 } from "../../constants";
 
 const LeaderboardEntry = ({ image, index, label, value }) => {
   const color = index === "1"
@@ -34,33 +37,73 @@ const LeaderboardEntry = ({ image, index, label, value }) => {
 }
 
 const Leaderboard = () => {
+  const [items, setItems] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState(null);
+
+  React.useEffect(() => {
+    const controller = new AbortController();
+    async function load() {
+      try {
+        setLoading(true);
+        setError(null);
+        let data = await getLeaderboardTop50(controller.signal);
+        // API may return array or { results: [...] }
+        if (data && Array.isArray(data.results)) {
+          data = data.results;
+        }
+        // Normalize items to the UI shape
+        const normalized = (data ?? []).map((row, idx) => ({
+          rank: row.rank ?? idx + 1,
+          username: row.username,
+          xp_value: row.xp_value,
+          level: row.level,
+          profile_icon: row.profile_icon,
+        }));
+        setItems(normalized);
+      } catch (e) {
+        console.error("Failed to load leaderboard:", e);
+        setError(e?.message || "Failed to load leaderboard");
+        // Fallback to mock to keep UI usable
+        // setItems(MOCK_LEADERBOARD_TOP50);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+    return () => controller.abort();
+  }, []);
+
   return (
     <div className="content">
       <div className="titles">
         <div className="text-wrapper">Leaderboards</div>
-
-        <p className="div">Top 50 Highest streak globally</p>
+        <p className="div">Top 50 Highest level globally</p>
       </div>
 
       <div className="line" />
 
-      <div className="scroll">
-        <LeaderboardEntry label = "BigOrange" value = "100" index = "1" image = "/assets/Icon.jpg" />
-        <LeaderboardEntry label = "BigOrange" value = "98" index = "2"/>
-        <LeaderboardEntry label = "BigOrange" value = "98" index = "3"/>
-        <LeaderboardEntry label = "BigOrange" value = "98" index = "4"/>
-        <LeaderboardEntry label = "BigOrange" value = "98" index = "5"/>
-        <LeaderboardEntry label = "BigOrange" value = "98" index = "6"/>
-        <LeaderboardEntry label = "BigOrange" value = "98" index = "7"/>
-        <LeaderboardEntry label = "BigOrange" value = "98" index = "8"/>
-        <LeaderboardEntry label = "BigOrange" value = "98" index = "9"/>
-        <LeaderboardEntry label = "BigOrange" value = "98" index = "10"/>
-        <LeaderboardEntry label = "BigOrange" value = "98" index = "11"/>
-        <LeaderboardEntry label = "BigOrange" value = "98" index = "12"/>
-        <LeaderboardEntry label = "BigOrange" value = "98" index = "13"/>
-        <LeaderboardEntry label = "BigOrange" value = "98" index = "14"/>
-        <LeaderboardEntry label = "BigOrange" value = "98" index = "15"/>
-      </div>
+      {loading ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 12 }}>
+          <LoadingIndicator />
+          <span style={{ color: '#9BA3AF' }}>Loading leaderboard…</span>
+        </div>
+      ) : (
+        <div className="scroll">
+          {items.map((it) => (
+            <LeaderboardEntry
+              key={it.rank}
+              label={it.username}
+              value={String(it.level)}
+              index={String(it.rank)}
+              image={it.profile_icon}
+            />
+          ))}
+          {items.length === 0 && (
+            <div style={{ padding: 12, color: '#9BA3AF' }}>No leaderboard data.</div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -22,8 +22,8 @@ function computeStreak(orderedQuestions, answers) {
 }
 function evaluateCorrect(q, rawAnswer) {
   if (!q) return false;
-  if (q.question_type === 'mcq') return String(rawAnswer) === String(q.correct_option_id);
-  if (q.question_type === 'fill') return !!rawAnswer && rawAnswer.trim().toLowerCase() === (q.correct_answer || '').trim().toLowerCase();
+  if (q.type === 'mcq') return String(rawAnswer) === String(q.correct_option_id);
+  if (q.type === 'fill_in_blank') return !!rawAnswer && rawAnswer.trim().toLowerCase() === (q.correct_answer || '').trim().toLowerCase();
   return false;
 }
 

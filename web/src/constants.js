@@ -160,6 +160,16 @@ export const MOCK_SUBSCRIPTION_PLANS = [
   { id: "team", name: "Team", price: 39.0, features: ["Team management", "Shared progress", "Reports"] },
 ];
 
+// Mock courses for user dropdown fallback (shape aligned to listUserCourses usage)
+export const MOCK_USER_COURSES = [
+  { id: 1, course_title: "C++ Foundations", course_description: "Basics, syntax, and first programs" },
+  { id: 2, course_title: "C++ OOP", course_description: "Classes, objects, inheritance" },
+  { id: 3, course_title: "Data Structures", course_description: "Vectors, lists, maps, and more" },
+  { id: 4, course_title: "Algorithms", course_description: "Sorting, searching, and complexity" },
+  { id: 5, course_title: "STL Mastery", course_description: "Practical STL containers and algorithms" },
+  { id: 6, course_title: "Modern C++", course_description: "C++11/14/17 features in practice" },
+];
+
 // Paid subscription (single-user) upgrade plan mock data for Subscription page cards
 // Tailored to highlight benefits: more XP, streak saver, faster energy regeneration.
 export const MOCK_SUBSCRIPTION_PLANS_PAID = [
@@ -651,3 +661,13 @@ export const MOCK_ADMIN_CHAPTERS = [
   { chapter_id: 'chap_010', course_id: 'course_102', title: 'Loops and Conditions', description: 'Practice loops', learning_resource_url: 'https://example.com/loops', order_index: 3 },
 ];
 export const ADMIN_CHAPTER_PRIMARY_KEY = 'chapter_id';
+
+// --- Leaderboard (client) mock data ---
+// Shape assumption: each item has { username, streak_value, avatar_url? }
+// Used as a fallback for the Home Leaderboard UI when API is unavailable.
+export const MOCK_LEADERBOARD_TOP50 = Array.from({ length: 15 }).map((_, i) => ({
+  rank: i + 1,
+  username: i === 0 ? 'BigOrange' : `User_${String(i + 1).padStart(2, '0')}`,
+  streak_value: i === 0 ? 100 : 98 - Math.floor(i / 2),
+  avatar_url: i === 0 ? '/assets/Icon.jpg' : null,
+}));

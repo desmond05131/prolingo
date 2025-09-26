@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { questions as MockQuestions } from '@/constants';
+import { getTestQuestions } from '@/client-api';
 import ExitButton from '@/components/Test/ExitButton';
 import ProgressCard from '@/components/Test/ProgressCard';
 import TimerCard from '@/components/Test/TimerCard';
@@ -18,12 +19,12 @@ import FloatingActionButton from '@/components/Test/FloatingActionButton';
  */
 export default function AttemptTest() {
 	const navigate = useNavigate();
-	const { courseId, chapterId, testId } = useParams();
+	const { testId } = useParams();
 
 	// Data state
-  const [questions] = useState(MockQuestions); // Each question may include options array
-  const [loading] = useState(false); // Future: fetch
-  const [error] = useState(''); // Future: fetch
+	const [questions, setQuestions] = useState([]); // Each question may include options array
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState('');
 
 	// Progress & interaction state
 	const [currentIndex, setCurrentIndex] = useState(0);
@@ -34,33 +35,6 @@ export default function AttemptTest() {
 	const [elapsedSeconds, setElapsedSeconds] = useState(0);
 	const timerRef = useRef(null);
 
-	// Assumptions (since backend test object details not loaded here yet)
-	// Could fetch test metadata if endpoint exists: /api/courses/tests/{testId}/ ??? Not in current code; leaving future hook.
-
-	// const fetchQuestions = useCallback(async () => {
-	// 	setLoading(true);
-	// 	setError('');
-	// 	try {
-	// 		// Fetch all questions then filter by testId (QuestionTable fetches all). Ideally there'd be an endpoint for test-specific.
-	// 		const response = await api.get('/api/courses/questions/');
-	// 		const all = response.data || [];
-	// 		const filtered = all.filter(q => String(q.test) === String(testId));
-
-	// 		// For MCQ we need options. Some question objects might embed options already (QuestionTable shows question.options?).
-	// 		// If not present, we could optionally fetch all options and join. For now, use existing included options field if present.
-	// 		setQuestions(filtered);
-	// 		if (filtered.length === 0) {
-	// 			setError('No questions found for this test yet.');
-	// 		}
-	// 	} catch (err) {
-	// 		const message = err?.response?.data?.detail || 'Failed to load questions';
-	// 		setError(message);
-	// 		console.error('AttemptTest fetchQuestions error', err);
-	// 	} finally {
-	// 		setLoading(false);
-	// 	}
-	// }, [testId]);
-
 	// Timer effect
 	useEffect(() => {
 		timerRef.current = setInterval(() => {
@@ -69,11 +43,29 @@ export default function AttemptTest() {
 		return () => clearInterval(timerRef.current);
 	}, []);
 
-	// useEffect(() => {
-	// 	fetchQuestions();
-	// }, [fetchQuestions]);
+	// Fetch questions for this test on mount/param change
+	const fetchQuestions = useCallback(async () => {
+		setLoading(true);
+		setError('');
+		try {
+			const data = await getTestQuestions(testId);
+			const arr = Array.isArray(data) ? data : (data?.results ?? []);
+			setQuestions(arr);
+			if (arr.length === 0) {
+				setError('No questions found for this test yet.');
+			}
+		} catch (err) {
+			const message = err?.response?.data?.detail || 'Failed to load questions';
+			setError(message);
+			console.error('AttemptTest fetchQuestions error', err);
+		} finally {
+			setLoading(false);
+		}
+	}, [testId]);
 
-  // Moved time formatting into TimerCard component
+	useEffect(() => {
+		fetchQuestions();
+	}, [fetchQuestions]);
 
 	const currentQuestion = questions[currentIndex];
 	const total = questions.length;
@@ -96,8 +88,6 @@ export default function AttemptTest() {
 		// Placeholder: gather payload and (future) POST to an endpoint.
 		const payload = {
 			test: Number(testId),
-			course: Number(courseId),
-			chapter: Number(chapterId),
 			elapsed_seconds: elapsedSeconds,
 			answers: questions.map(q => ({
 				question: q.id,
@@ -108,7 +98,7 @@ export default function AttemptTest() {
 		console.log('Attempt submission payload (placeholder):', payload);
 		setHasSubmitted(true);
 		// Navigate to result page with state
-		navigate(`/attempt-test/${courseId}/${chapterId}/${testId}/result`, {
+		navigate(`/attempt-test/${testId}/result`, {
 			state: { questions, answers, elapsedSeconds }
 		});
 	};

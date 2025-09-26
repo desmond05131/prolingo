@@ -1,63 +1,167 @@
+import { useEffect, useMemo, useState } from "react";
 import AchievementHeader from "@/components/achievement/AchievementHeader";
 import { Sidebar } from "../../components/Sidebar/Sidebar";
 import { Stats } from "../../components/Stats/Stats";
 import "../../styles/Home.css";
 import "../../styles/Achievements.css"; // custom scroll styling similar to leaderboard
 import AchievementRow from "@/components/achievement/AchievementRow";
-
-// Mock achievements data (could be moved to constants or fetched later)
-const achievements = [
-  {
-    id: "on-fire",
-    title: "On Fire",
-    description: "Answer 20 lessons within a week",
-    reward: "+200 EXP",
-    progress: { current: 15, total: 20 },
-    status: "in-progress",
-  },
-  {
-    id: "starter",
-    title: "First Steps",
-    description: "Complete your first lesson",
-    reward: "+25 EXP",
-    progress: { current: 1, total: 1 },
-    status: "completed",
-  },
-  {
-    id: "consistency",
-    title: "Consistency",
-    description: "Log in 7 days in a row",
-    reward: "+120 EXP",
-    progress: { current: 3, total: 7 },
-    status: "in-progress",
-  },
-  {
-    id: "scholar",
-    title: "Scholar",
-    description: "Reach 1000 total EXP",
-    reward: "+300 EXP",
-    progress: { current: 820, total: 1000 },
-    status: "in-progress",
-  },
-  {
-    id: "scholar",
-    title: "Scholar",
-    description: "Reach 1000 total EXP",
-    reward: "+300 EXP",
-    progress: { current: 820, total: 1000 },
-    status: "in-progress",
-  },
-  {
-    id: "scholar",
-    title: "Scholar",
-    description: "Reach 1000 total EXP",
-    reward: "+300 EXP",
-    progress: { current: 820, total: 1000 },
-    status: "in-progress",
-  },
-];
+import LoadingIndicator from "@/components/LoadingIndicator";
+import { listAchievements, claimAchievement } from "@/client-api";
+import { useStatsState } from "@/components/Stats/useStatsState.jsx";
+import { useBoundStore } from "@/stores/stores";
+import { useToast } from "@/hooks/use-toast";
 
 function AchievementsHome() {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [claimingMap, setClaimingMap] = useState({}); // { [achievement_id]: true }
+  // Pull user stats and completed tests for progress computation
+  const { xp: userXp, streak: userStreak } = useStatsState();
+  const completedTestIds = useBoundStore((s) => s.completedTestIds);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const abort = new AbortController();
+    async function load() {
+      try {
+        setLoading(true);
+        const data = await listAchievements(abort.signal);
+        setItems(data ?? []);
+        setError(null);
+      } catch (err) {
+        console.error("Failed to load achievements", err);
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+    return () => abort.abort();
+  }, []);
+
+  const rows = useMemo(() => {
+    // Map API schema -> UI props for AchievementRow
+    // API item: { achievement_id, claimable, claimed, current_progress_streak, current_progress_xp, reward_type, reward_amount, reward_content, reward_content_description, target_completed_test_id, target_streak_value, target_xp_value }
+    return items.map((it) => {
+      const id = it.achievement_id ?? crypto.randomUUID?.() ?? Math.random().toString(36).slice(2);
+      let title = "Achievement";
+      let description = "";
+      let reward = "";
+
+      // Server-provided state
+      const claimable = Boolean(it.claimable);
+      const claimed = Boolean(it.claimed);
+
+      const targetXp = it.target_xp_value ?? null;
+      const targetStreak = it.target_streak_value ?? null;
+      const targetTestId = it.target_completed_test_id ?? null;
+
+      // Reward string formatting
+      if (it.reward_type === "badge") {
+        reward = `Badge: ${it.reward_content || "Special"}`;
+      } else if (it.reward_type === "xp") {
+        reward = `+${it.reward_amount ?? 0} XP`;
+      } else if (it.reward_type === "energy") {
+        reward = `+${it.reward_amount ?? 0} Energy`;
+      } else {
+        reward = it.reward_amount ? `+${it.reward_amount}` : (it.reward_content || "");
+      }
+
+      // Append lightweight status label from server
+      if (claimed) {
+        reward = `${reward} • Claimed`;
+      } else if (claimable) {
+        reward = `${reward} • Ready to claim`;
+      }
+
+      // Title/description derived from targets first (prefer specific goals)
+      if (targetTestId) {
+        title = `Complete Test ${targetTestId}`;
+        description = it.reward_content_description || "Complete the required test to claim the reward.";
+      } else if (targetStreak != null) {
+        const target = Number(targetStreak) || 0;
+        title = `${target}-Day Streak`;
+        description = it.reward_content_description || `Maintain a ${target}-day streak to claim the reward.`;
+      } else if (targetXp != null) {
+        const target = Number(targetXp) || 0;
+        title = `Reach ${target} XP`;
+        description = it.reward_content_description || `Earn ${target} total XP to claim the reward.`;
+      } else if (it.reward_type === "badge") {
+        title = it.reward_content_description || (it.reward_content ? String(it.reward_content).replace(/[_-]/g, " ") : "Special Badge");
+        description = it.reward_content_description || "Earn this badge by meeting the requirement.";
+      } else if (it.reward_type === "xp") {
+        title = "Experience Reward";
+        description = "Complete tasks to earn experience points.";
+      } else if (it.reward_type === "energy") {
+        title = "Energy Reward";
+        description = "Get extra energy for your study streaks.";
+      } else {
+        title = "Reward";
+        description = it.reward_content_description || "";
+      }
+
+      // Progress calculation: prioritize specific target if present
+      let progress = null;
+      if (targetTestId) {
+        // If server says claimable/claimed, we consider it satisfied
+        const doneFromServer = claimed || claimable;
+        const doneLocal = Array.isArray(completedTestIds) && completedTestIds.includes(targetTestId);
+        const done = doneFromServer || doneLocal;
+        progress = { current: done ? 1 : 0, total: 1 };
+      } else if (targetStreak != null) {
+        const total = Math.max(0, Number(targetStreak) || 0);
+        if (total > 0) {
+          // Prefer server-provided progress
+          let current = typeof it.current_progress_streak === 'number' ? it.current_progress_streak : Math.max(0, Number(userStreak) || 0);
+          if ((claimed || claimable) && current < total) current = total;
+          progress = { current, total };
+        }
+      } else if (targetXp != null) {
+        const total = Math.max(0, Number(targetXp) || 0);
+        if (total > 0) {
+          // Prefer server-provided progress
+          let current = typeof it.current_progress_xp === 'number' ? it.current_progress_xp : Math.max(0, Number(userXp) || 0);
+          if ((claimed || claimable) && current < total) current = total;
+          progress = { current, total };
+        }
+      }
+
+      return {
+        id,
+        title,
+        description,
+        reward,
+        progress, // null hides bar; object shows progress
+        claimable,
+        claimed,
+        claiming: !!claimingMap[id],
+      };
+    });
+  }, [items, userXp, userStreak, completedTestIds, claimingMap]);
+
+  async function handleClaim(achievementId) {
+    if (!achievementId && achievementId !== 0) return;
+    setClaimingMap((m) => ({ ...m, [achievementId]: true }));
+    try {
+      await claimAchievement(achievementId);
+      toast.success?.("Reward claimed!") || toast("Reward claimed!");
+      // Reload list to reflect claim state and any updated balances
+      const abort = new AbortController();
+      const data = await listAchievements(abort.signal);
+      setItems(data ?? []);
+    } catch (err) {
+      console.error('Claim failed', err);
+      const msg = err?.response?.data?.detail || err?.message || 'Failed to claim reward';
+      toast.error?.(msg) || toast(msg);
+    } finally {
+      setClaimingMap((m) => {
+        const { [achievementId]: _, ...rest } = m;
+        return rest;
+      });
+    }
+  }
+
   return (
     <div className="flex flex-row h-screen overflow-hidden">
       <Sidebar />
@@ -73,21 +177,24 @@ function AchievementsHome() {
             </h2>
           </div>
         </div>
-        {/* <div className="max-w-6xl mx-auto px-4 md:px-6 space-y-6">
-          <div className="text-xl md:text-2xl font-semibold text-white">
-            Achievements
-          </div>
-          <div className="achievements-scroll flex flex-col gap-4">
-            {achievements.map((a) => (
-              <AchievementRow key={a.id} {...a} />
-            ))}
-          </div>
-        </div> */}
         {/* Scrollable list area */}
         <div className="px-4 md:px-6 pb-8 flex-1 min-h-0">
           <div className="achievements-scroll h-full flex flex-col gap-4">
-            {achievements.map((a) => (
-              <AchievementRow key={a.id + a.progress.current} {...a} />
+            {loading && (
+              <div className="flex items-center gap-3 text-white/80">
+                <LoadingIndicator />
+                <span>Loading achievements…</span>
+              </div>
+            )}
+            {!loading && !error && rows.length === 0 && (
+              <div className="text-white/70 text-sm">No achievements found.</div>
+            )}
+            {!loading && !error && rows.map((a) => (
+              <AchievementRow
+                key={a.id}
+                {...a}
+                onClaim={a.claimable && !a.claimed ? () => handleClaim(a.id) : undefined}
+              />
             ))}
           </div>
         </div>

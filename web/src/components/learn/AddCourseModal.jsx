@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { addCourse, setSelectedCourse } from "@/stores/stores";
+import { useEffect, useMemo, useState } from "react";
+import { addCourse, setSelectedCourse, removeCourse } from "@/stores/stores";
 import {
   Dialog,
   DialogContent,
@@ -8,45 +8,98 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-
-// Mock API function
-function fetchAvailableCourses() {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([
-        { id: 101, title: "Algorithms", description: "Sorting, searching, complexity" },
-        { id: 102, title: "Advanced C++", description: "Templates, STL internals, patterns" },
-        { id: 103, title: "Systems Programming", description: "Memory, processes, concurrency" },
-        { id: 104, title: "Game Dev Basics", description: "Loops, sprites, physics intro" },
-        { id: 105, title: "Networking", description: "Sockets, protocols, HTTP" },
-      ]);
-    }, 600);
-  });
-}
+import { listCourses, listUserCourses, joinUserCourse, unjoinUserCourse } from "@/client-api";
 
 export function AddCourseModal({ open, onClose }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [items, setItems] = useState([]);
+  const [joinedMap, setJoinedMap] = useState({}); // courseId -> { userCourseId, raw }
+  const [actionId, setActionId] = useState(null); // course id currently joining/unjoining
+  const [didUnjoin, setDidUnjoin] = useState(false); // track if any unjoin occurred while open
 
   useEffect(() => {
     if (!open) return;
-    setLoading(true);
-    setError(null);
-    fetchAvailableCourses()
-      .then((data) => setItems(data))
-      .catch(() => setError("Failed to load courses"))
-      .finally(() => setLoading(false));
+    // reset session flags each time modal opens
+    setDidUnjoin(false);
+    const abort = new AbortController();
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const [coursesRes, userCoursesRes] = await Promise.all([
+          listCourses(abort.signal),
+          listUserCourses(abort.signal),
+        ]);
+        const ensureArray = (x) => (Array.isArray(x) ? x : Array.isArray(x?.results) ? x.results : []);
+        const courses = ensureArray(coursesRes);
+        const userCourses = ensureArray(userCoursesRes);
+        setItems(courses);
+        // Build map: courseId -> userCourse record id
+        const map = {};
+        for (const uc of userCourses) {
+            map[uc.course_id] = true;
+        }
+        setJoinedMap(map);
+      } catch (e) {
+        console.error(e);
+        setError("Failed to load courses");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+    return () => abort.abort();
   }, [open]);
 
   const addAndSelect = (course) => {
     addCourse(course);
     setSelectedCourse(course);
-    onClose?.();
+    // onClose?.();
+  };
+
+  const isJoined = useMemo(() => {
+    return (courseId) => Boolean(joinedMap[courseId]);
+  }, [joinedMap]);
+
+  const handleJoin = async (course) => {
+    try {
+      setActionId(course.course_id);
+      await joinUserCourse(course.course_id);
+      setJoinedMap((prev) => ({ ...prev, [course.course_id]: true }));
+      // keep local store in sync and select
+      addAndSelect(course);
+    } catch (e) {
+      console.error(e);
+      setError("Failed to join course");
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  const handleUnjoin = async (course) => {
+    const entry = joinedMap[course.course_id];
+    if (!entry) return;
+    try {
+      setActionId(course.course_id);
+      await unjoinUserCourse(course.course_id);
+      setJoinedMap((prev) => {
+        const copy = { ...prev };
+        delete copy[course.course_id];
+        return copy;
+      });
+      removeCourse(course.course_id);
+      setDidUnjoin(true);
+    } catch (e) {
+      console.error(e);
+      setError("Failed to unjoin course");
+    } finally {
+      setActionId(null);
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose?.(); }}>
+    <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose?.({ unjoined: didUnjoin }); }}>
       <DialogContent className="p-0">
         <DialogHeader className="px-5 py-4 border-b">
           <DialogTitle className="text-sm">Join a Course</DialogTitle>
@@ -60,7 +113,7 @@ export function AddCourseModal({ open, onClose }) {
           )}
           {!loading && items.map((c) => (
             <div
-              key={c.id}
+              key={c.course_id}
               className="group rounded-md border border-border p-3 hover:border-indigo-300 hover:bg-indigo-50 transition-colors flex flex-col gap-1"
             >
               <div className="flex items-start justify-between">
@@ -70,22 +123,44 @@ export function AddCourseModal({ open, onClose }) {
                 </div>
               </div>
               <div className="flex justify-end">
-                <button
-                  onClick={() => addAndSelect(c)}
-                  className="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-2 py-1 text-[11px] font-medium text-white shadow hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
-                    <path d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1Z" />
-                  </svg>
-                  Join
-                </button>
+                {isJoined(c.course_id) ? (
+                  <button
+                    onClick={() => handleUnjoin(c)}
+                    disabled={actionId === c.course_id}
+                    className="inline-flex items-center gap-1 rounded-md border border-red-500 text-red-600 bg-white px-2 py-1 text-[11px] font-medium hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-60"
+                  >
+                    {actionId === c.course_id ? (
+                      <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-red-500 border-t-transparent" />
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                        <path d="M4 10a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1Z" />
+                      </svg>
+                    )}
+                    Unjoin 
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleJoin(c)}
+                    disabled={actionId === c.course_id}
+                    className="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-2 py-1 text-[11px] font-medium text-white shadow hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60"
+                  >
+                    {actionId === c.course_id ? (
+                      <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/70 border-t-transparent" />
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                        <path d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1Z" />
+                      </svg>
+                    )}
+                    Join
+                  </button>
+                )}
               </div>
             </div>
           ))}
         </div>
         <DialogFooter className="px-5 py-3 border-t">
           <button
-            onClick={onClose}
+            onClick={() => onClose?.({ unjoined: didUnjoin })}
             className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             Close

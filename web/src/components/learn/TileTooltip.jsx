@@ -22,6 +22,7 @@ const getTileTooltipLeftOffset = ({ index, unitNumber, tilesLength }) => {
 
 export const TileTooltip = ({
   selectedTile,
+  selectedTileInfo,
   index,
   unitNumber,
   tilesLength,
@@ -97,13 +98,13 @@ export const TileTooltip = ({
         </div>
         {status === "ACTIVE" ? (
           <Link
-            to="/lesson"
+            to={`/attempt-test/${selectedTileInfo?.test_id}`}
             className={[
               "flex w-full items-center justify-center rounded-xl border-b-4 border-gray-200 bg-white p-3 uppercase",
               activeTextColor,
             ].join(" ")}
           >
-            Start +10 XP
+            Start
           </Link>
         ) : status === "LOCKED" ? (
           <button

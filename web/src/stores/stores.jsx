@@ -3,6 +3,8 @@ import { create } from "zustand";
 export const useBoundStore = create(() => ({
   count: 0,
   text: "hello",
+  // Array of test_ids that the user has completed/attempted successfully
+  completedTestIds: [],
   lessonsCompleted: [],
   increaseLessonsCompleted: [],
   increaseLingots: [],
@@ -15,6 +17,10 @@ export const useBoundStore = create(() => ({
 
 export const setUnits = (units) => {
   useBoundStore.setState({ units });
+};
+
+export const setCompletedTestIds = (ids) => {
+  useBoundStore.setState({ completedTestIds: Array.isArray(ids) ? ids : [] });
 };
 
 export const setCourses = (courses) => {
