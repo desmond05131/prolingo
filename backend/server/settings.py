@@ -43,7 +43,7 @@ REST_FRAMEWORK = {
 } #configuration for JWT tokens to work properly
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=365),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 } # specify token lifetimes
 
