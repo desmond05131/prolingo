@@ -218,39 +218,39 @@ export const MOCK_ADMIN_NAV = [
 // Mock subscription records (would come from backend)
 export const MOCK_ADMIN_SUBSCRIPTIONS = [
   {
-    id: 'sub_001',
-    userId: 'user_123',
-    userName: 'Jane Developer',
-    plan: 'Pro',
+    subscription_id: 'sub_001',
+    user_id: 'user_123',
+    type: 'month',
+    start_date: '2025-09-01',
+    end_date: '2025-10-01',
     status: 'active',
-    renewsOn: '2025-12-01',
+    is_renewable: true,
     amount: 9.99,
-    currency: 'USD',
   },
   {
-    id: 'sub_002',
-    userId: 'user_456',
-    userName: 'John Tester',
-    plan: 'Team',
-    status: 'canceled',
-    renewsOn: null,
-    amount: 39.00,
-    currency: 'USD',
+    subscription_id: 'sub_002',
+    user_id: 'user_456',
+    type: 'year',
+    start_date: '2024-10-10',
+    end_date: '2025-10-10',
+    status: 'expired',
+    is_renewable: false,
+    amount: 79.99,
   },
   {
-    id: 'sub_003',
-    userId: 'user_789',
-    userName: 'Alice Analyst',
-    plan: 'Pro',
-    status: 'past_due',
-    renewsOn: '2025-10-05',
+    subscription_id: 'sub_003',
+    user_id: 'user_789',
+    type: 'month',
+    start_date: '2025-09-20',
+    end_date: '2025-10-20',
+    status: 'pending_payment',
+    is_renewable: true,
     amount: 9.99,
-    currency: 'USD',
   }
 ];
 
 // Central place to configure which field acts as the primary key for admin subscription records
-export const ADMIN_SUBSCRIPTION_PRIMARY_KEY = 'id';
+export const ADMIN_SUBSCRIPTION_PRIMARY_KEY = 'subscription_id';
 
 // --- Feedback (admin) mock data ---
 // Schema reference:
@@ -585,7 +585,7 @@ export const ADMIN_TEST_PRIMARY_KEY = 'test_id';
 // (PK) question_id
 // (FK) test_id
 // text
-// type (MCQ, fill-in-blank)
+// type (MCQ, fill_in_blank)
 // correct_answer_text
 // order_index
 export const MOCK_ADMIN_QUESTIONS = [
@@ -593,7 +593,7 @@ export const MOCK_ADMIN_QUESTIONS = [
     question_id: 'q_001',
     test_id: 'test_101',
     text: 'What is C++?',
-    type: 'MCQ',
+    type: 'mcq',
     correct_answer_text: 'A programming language',
     order_index: 1,
   },
@@ -601,7 +601,7 @@ export const MOCK_ADMIN_QUESTIONS = [
     question_id: 'q_002',
     test_id: 'test_101',
     text: 'Fill the blank: ____ is compiled.',
-    type: 'fill-in-blank',
+    type: 'fill_in_blank',
     correct_answer_text: 'C++',
     order_index: 2,
   },
@@ -609,7 +609,7 @@ export const MOCK_ADMIN_QUESTIONS = [
     question_id: 'q_010',
     test_id: 'test_202',
     text: 'Which loop repeats a fixed number of times?',
-    type: 'MCQ',
+    type: 'mcq',
     correct_answer_text: 'for loop',
     order_index: 1,
   },

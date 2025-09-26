@@ -7,6 +7,7 @@ import AdminActionButton from '@/components/admin/AdminActionButton';
 import SubscriptionFormDialog from '@/components/admin/SubscriptionFormDialog';
 import { ADMIN_SUBSCRIPTION_PRIMARY_KEY } from '@/constants';
 import { fetchAdminSubscriptions, updateAdminSubscription, createAdminSubscription, deleteAdminSubscription } from '@/api';
+import { formatDate, formatDateTime, toTimestamp } from '@/lib/datetime';
 import { useToast } from '@/hooks/use-toast';
 
 const columnHelper = createColumnHelper();
@@ -26,10 +27,7 @@ export default function AdminSubscriptions() {
       }
     } catch (err) {
       setError(err?.message || 'Failed to load subscriptions');
-      toast({
-        description: 'Failed to load subscriptions',
-        variant: 'destructive'
-      });
+      toast.error('Failed to load subscriptions');
     } finally {
       setLoading(false);
     }
@@ -42,33 +40,33 @@ export default function AdminSubscriptions() {
 
   const data = useMemo(() => rows, [rows]);
 
-  const handleSave = useCallback(async (updated) => {
+  const handleSave = useCallback(async (draft) => {
     const pk = ADMIN_SUBSCRIPTION_PRIMARY_KEY;
     try {
-      if (updated[pk]) {
-        await updateAdminSubscription(updated[pk], updated);
-        toast({ description: 'Subscription updated successfully.' });
+      if (draft[pk]) {
+        await updateAdminSubscription(draft[pk], draft);
+        toast.success('Subscription updated successfully.');
       } else {
-        // sanitize minimal required fields
-        const payload = { ...updated };
+        const payload = { ...draft };
         await createAdminSubscription(payload);
-        toast({ description: 'Subscription created successfully.' });
+        toast.success('Subscription created successfully.');
       }
       await loadData();
     } catch (err) {
-      toast({ description: err?.message || 'Failed to save subscription', variant: 'destructive' });
+      toast.error(err?.message || 'Failed to save subscription');
       throw err; // keep dialog open & show inline error
     }
   }, [loadData, toast]);
 
   const columns = useMemo(() => [
-    columnHelper.accessor('userName', {
-      header: 'Username',
+    columnHelper.accessor('username', {
+      header: 'User',
       cell: info => <span className="font-medium text-neutral-100">{info.getValue()}</span>,
       sortingFn: 'alphanumeric',
     }),
-    columnHelper.accessor('plan', {
-      header: 'Subscription Type',
+    columnHelper.accessor('type', {
+      header: 'Type',
+      cell: info => <span className="capitalize">{info.getValue()}</span>,
       sortingFn: 'alphanumeric',
     }),
     columnHelper.accessor('status', {
@@ -76,23 +74,34 @@ export default function AdminSubscriptions() {
       cell: info => <StatusBadge status={info.getValue()} />,
       sortingFn: 'alphanumeric',
     }),
-    columnHelper.accessor('renewsOn', {
-      header: 'Renew / End At',
-      cell: info => <span className="text-neutral-300">{info.getValue() || '—'}</span>,
+    columnHelper.accessor('start_date', {
+      header: 'Start Date',
+      cell: info => <span className="text-neutral-300">{formatDateTime(info.getValue())}</span>,
       sortingFn: (rowA, rowB, columnId) => {
-        const a = rowA.getValue(columnId);
-        const b = rowB.getValue(columnId);
-        const at = a ? Date.parse(a) : 0;
-        const bt = b ? Date.parse(b) : 0;
+        const at = toTimestamp(rowA.getValue(columnId));
+        const bt = toTimestamp(rowB.getValue(columnId));
         return at === bt ? 0 : at > bt ? 1 : -1;
       },
     }),
+    columnHelper.accessor('end_date', {
+      header: 'End Date',
+      cell: info => <span className="text-neutral-300">{formatDateTime(info.getValue())}</span>,
+      sortingFn: (rowA, rowB, columnId) => {
+        const at = toTimestamp(rowA.getValue(columnId));
+        const bt = toTimestamp(rowB.getValue(columnId));
+        return at === bt ? 0 : at > bt ? 1 : -1;
+      },
+    }),
+    columnHelper.accessor('is_renewable', {
+      header: 'Renewable',
+      cell: info => info.getValue() ? 'Yes' : 'No',
+      sortingFn: (a,b,id) => {
+        const av = a.getValue(id) ? 1 : 0; const bv = b.getValue(id) ? 1 : 0; return av - bv;
+      }
+    }),
     columnHelper.accessor('amount', {
       header: 'Amount',
-      cell: info => {
-        const row = info.row.original;
-        return `${row.currency} ${Number(info.getValue()).toFixed(2)}`;
-      },
+      cell: info => `${Number(info.getValue() ?? 0).toFixed(2)}`,
       sortingFn: 'alphanumeric',
     }),
     columnHelper.display({
@@ -102,17 +111,16 @@ export default function AdminSubscriptions() {
         const record = info.row.original;
         return (
           <div className="flex gap-1">
-            <AdminActionButton onClick={() => console.log('View', record)}>View</AdminActionButton>
             <AdminActionButton variant="outline" onClick={() => setActiveRecord(record)}>Modify</AdminActionButton>
             <AdminActionButton variant="destructive" onClick={async () => {
-              if (!record.id) return;
+              if (!record.subscription_id) return;
               if (!window.confirm('Delete this subscription record? This cannot be undone.')) return;
               try {
-                await deleteAdminSubscription(record.id);
-                toast({ description: 'Subscription deleted.' });
+                await deleteAdminSubscription(record.subscription_id);
+                toast.success('Subscription deleted.');
                 await loadData();
               } catch (err) {
-                toast({ description: err?.message || 'Failed to delete subscription', variant: 'destructive' });
+                toast.error(err?.message || 'Failed to delete subscription');
               }
             }}>Delete</AdminActionButton>
           </div>
@@ -131,14 +139,14 @@ export default function AdminSubscriptions() {
           <button
             className="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-neutral-800 bg-neutral-900 text-neutral-100 border border-neutral-800 hover:border-neutral-700 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
             onClick={() => setActiveRecord({
-              id: undefined,
-              userId: '',
-              userName: '',
-              plan: '',
-              status: 'active',
-              renewsOn: '',
+              subscription_id: undefined,
+              user_id: '',
+              type: 'month',
+              start_date: '',
+              end_date: '',
+              status: 'pending_payment',
+              is_renewable: true,
               amount: 0,
-              currency: 'USD'
             })}
           >Create New Subscription</button>
         </div>

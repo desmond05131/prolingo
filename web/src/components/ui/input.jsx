@@ -1,8 +1,24 @@
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
+import { DatePicker } from "@/components/ui/date-picker";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
 
 const Input = React.forwardRef(({ className, type, ...props }, ref) => {
+  // Custom handling for date and datetime
+  if (type === 'date') {
+    const { value, onChange, name, id, disabled } = props;
+    return (
+      <DatePicker value={value} onChange={onChange} name={name} id={id} disabled={disabled} className={className} />
+    );
+  }
+  if (type === 'datetime' || type === 'datetime-local') {
+    const { value, onChange, name, id, disabled } = props;
+    return (
+      <DateTimePicker value={value} onChange={onChange} name={name} id={id} disabled={disabled} className={className} />
+    );
+  }
+
   return (
     <input
       type={type}

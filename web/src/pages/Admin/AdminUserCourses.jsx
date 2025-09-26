@@ -28,7 +28,7 @@ export default function AdminUserCourses() {
       if (Array.isArray(list) && list.length) setRows(list);
     } catch (err) {
       setError(err?.message || 'Failed to load user courses');
-      toast({ description: 'Failed to load user courses', variant: 'destructive' });
+      toast.error('Failed to load user courses');
     } finally { setLoading(false); }
   }, [toast]);
 
@@ -41,15 +41,15 @@ export default function AdminUserCourses() {
     try {
       if (updated[pk]) {
         await updateAdminUserCourse(updated[pk], updated);
-        toast({ description: 'User course updated successfully.' });
+        toast.success('User course updated successfully.');
       } else {
         const payload = { ...updated };
         await createAdminUserCourse(payload);
-        toast({ description: 'User course created successfully.' });
+        toast.success('User course created successfully.');
       }
       await loadData();
     } catch (err) {
-      toast({ description: err?.message || 'Failed to save record', variant: 'destructive' });
+      toast.error(err?.message || 'Failed to save record');
       throw err;
     }
   }, [loadData, toast]);
@@ -84,10 +84,10 @@ export default function AdminUserCourses() {
               if (!window.confirm('Delete this user course record?')) return;
               try {
                 await deleteAdminUserCourse(record.user_course_id);
-                toast({ description: 'User course deleted.' });
+                toast.success('User course deleted.');
                 await loadData();
               } catch (err) {
-                toast({ description: err?.message || 'Failed to delete record', variant: 'destructive' });
+                toast.error(err?.message || 'Failed to delete record');
               }
             }}>Delete</AdminActionButton>
           </div>

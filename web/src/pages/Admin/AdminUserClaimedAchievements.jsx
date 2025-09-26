@@ -14,12 +14,13 @@ import {
   MOCK_ADMIN_USER_CLAIMED_ACHIEVEMENTS,
   ADMIN_USER_CLAIMED_ACHIEVEMENT_PRIMARY_KEY
 } from '@/constants';
+import { formatDateTime } from '@/lib/datetime';
 
 const columnHelper = createColumnHelper();
 
 export default function AdminUserClaimedAchievements() {
   const { toast } = useToast();
-  const [rows, setRows] = useState(() => MOCK_ADMIN_USER_CLAIMED_ACHIEVEMENTS);
+  const [rows, setRows] = useState(() => []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeRecord, setActiveRecord] = useState(null);
@@ -34,7 +35,7 @@ export default function AdminUserClaimedAchievements() {
       }
     } catch (err) {
       setError(err?.message || 'Failed to load records');
-      toast({ description: 'Failed to load records', variant: 'destructive' });
+      toast.error('Failed to load records');
     } finally {
       setLoading(false);
     }
@@ -49,15 +50,15 @@ export default function AdminUserClaimedAchievements() {
     try {
       if (updated[pk]) {
         await updateAdminUserClaimedAchievement(updated[pk], updated);
-        toast({ description: 'Record updated successfully.' });
+        toast.success('Record updated successfully.');
       } else {
         const payload = { ...updated };
         await createAdminUserClaimedAchievement(payload);
-        toast({ description: 'Record created successfully.' });
+        toast.success('Record created successfully.');
       }
       await loadData();
     } catch (err) {
-      toast({ description: err?.message || 'Failed to save record', variant: 'destructive' });
+      toast.error(err?.message || 'Failed to save record');
       throw err;
     }
   }, [loadData, toast]);
@@ -68,17 +69,13 @@ export default function AdminUserClaimedAchievements() {
       cell: info => <span className="font-medium text-neutral-100">{info.getValue() || '—'}</span>,
       sortingFn: 'alphanumeric',
     }),
-    columnHelper.accessor('user_id', {
-      header: 'User ID',
-      sortingFn: 'alphanumeric',
-    }),
-    columnHelper.accessor('achievement_id', {
+    columnHelper.accessor('achievement', {
       header: 'Achievement ID',
       sortingFn: 'alphanumeric',
     }),
     columnHelper.accessor('claimed_date', {
       header: 'Claimed Date',
-      cell: info => <span className="text-neutral-300">{info.getValue() || '—'}</span>,
+      cell: info => <span className="text-neutral-300">{formatDateTime(info.getValue()) || '—'}</span>,
       sortingFn: (rowA, rowB, columnId) => {
         const a = rowA.getValue(columnId);
         const b = rowB.getValue(columnId);
@@ -94,7 +91,6 @@ export default function AdminUserClaimedAchievements() {
         const record = info.row.original;
         return (
           <div className="flex gap-1">
-            <AdminActionButton onClick={() => console.log('View', record)}>View</AdminActionButton>
             <AdminActionButton variant="outline" onClick={() => setActiveRecord(record)}>Modify</AdminActionButton>
             <AdminActionButton variant="destructive" onClick={async () => {
               const pk = ADMIN_USER_CLAIMED_ACHIEVEMENT_PRIMARY_KEY;
@@ -102,10 +98,10 @@ export default function AdminUserClaimedAchievements() {
               if (!window.confirm('Delete this record? This cannot be undone.')) return;
               try {
                 await deleteAdminUserClaimedAchievement(record[pk]);
-                toast({ description: 'Record deleted.' });
+                toast.success('Record deleted.');
                 await loadData();
               } catch (err) {
-                toast({ description: err?.message || 'Failed to delete record', variant: 'destructive' });
+                toast.error(err?.message || 'Failed to delete record');
               }
             }}>Delete</AdminActionButton>
           </div>

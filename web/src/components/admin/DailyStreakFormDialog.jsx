@@ -11,6 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ADMIN_DAILY_STREAK_PRIMARY_KEY } from '@/constants';
+import { fetchAdminUsers } from '@/api';
+import RemoteSelect from '../ui/remote-select';
 
 /**
  * DailyStreakFormDialog
@@ -67,15 +69,26 @@ export function DailyStreakFormDialog({ open, onOpenChange, record, onSave, prim
           <div className="grid gap-4">
             <div className="space-y-1">
               <Label>User Name</Label>
-              <Input
+              {/* <Input
                 name="username"
                 value={form.username || ''}
                 onChange={handleChange}
                 placeholder="Jane Developer"
                 disabled={!isCreate && !!record.username}
+              /> */}
+              <RemoteSelect
+                id="user"
+                value={String(form.user ?? '')}
+                onChange={(val) => setForm(f => ({ ...f, user: val }))}
+                fetcher={fetchAdminUsers}
+                getValue={(u) => u.id}
+                getLabel={(u) => u.username}
+                placeholder="Select a user"
+                enabled={open}
+                disabled={!isCreate && !!(record?.user)}
               />
             </div>
-            <div className="space-y-1">
+            {/* <div className="space-y-1">
               <Label>User ID</Label>
               <Input
                 name="user_id"
@@ -84,10 +97,10 @@ export function DailyStreakFormDialog({ open, onOpenChange, record, onSave, prim
                 placeholder="user_123"
                 disabled={!isCreate && !!record.user_id}
               />
-            </div>
+            </div> */}
             <div className="space-y-1">
               <Label htmlFor="daily_streak_date">Streak Date</Label>
-              <Input id="daily_streak_date" name="daily_streak_date" type="date" value={form.daily_streak_date || ''} onChange={handleChange} />
+              <Input id="daily_streak_date" name="daily_streak_date" type="datetime" value={form.daily_streak_date || ''} onChange={handleChange} />
             </div>
             <div className="flex items-center gap-2">
               <input id="is_streak_saver" name="is_streak_saver" type="checkbox" className="h-4 w-4" checked={!!form.is_streak_saver} onChange={handleChange} />

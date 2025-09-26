@@ -36,7 +36,7 @@ export default function AdminUserTests() {
       if (Array.isArray(list) && list.length) setRows(list);
     } catch (err) {
       setError(err?.message || 'Failed to load user tests');
-      toast({ description: 'Failed to load user tests', variant: 'destructive' });
+      toast.error('Failed to load user tests');
     } finally { setLoading(false); }
   }, [toast]);
 
@@ -60,15 +60,15 @@ export default function AdminUserTests() {
     try {
       if (updated[pk]) {
         await updateAdminUserTest(updated[pk], updated);
-        toast({ description: 'User test updated successfully.' });
+        toast.success('User test updated successfully.');
       } else {
         const payload = { ...updated };
         await createAdminUserTest(payload);
-        toast({ description: 'User test created successfully.' });
+        toast.success('User test created successfully.');
       }
       await loadData();
     } catch (err) {
-      toast({ description: err?.message || 'Failed to save record', variant: 'destructive' });
+      toast.error(err?.message || 'Failed to save record');
       throw err;
     }
   }, [loadData, toast]);
@@ -78,15 +78,15 @@ export default function AdminUserTests() {
     try {
       if (updated[pk]) {
         await updateAdminUserTestAnswer(updated[pk], updated);
-        toast({ description: 'Answer updated successfully.' });
+        toast.success('Answer updated successfully.');
       } else {
         const payload = { ...updated };
         await createAdminUserTestAnswer(payload);
-        toast({ description: 'Answer created successfully.' });
+        toast.success('Answer created successfully.');
       }
       if (updated.user_test_id) await loadAnswers(updated.user_test_id);
     } catch (err) {
-      toast({ description: err?.message || 'Failed to save answer', variant: 'destructive' });
+      toast.error(err?.message || 'Failed to save answer');
       throw err;
     }
   }, [loadAnswers, toast]);
@@ -107,10 +107,10 @@ export default function AdminUserTests() {
                 if (!window.confirm('Delete this answer?')) return;
                 try {
                   await deleteAdminUserTestAnswer(record.user_test_answer_id);
-                  toast({ description: 'Answer deleted.' });
+                  toast.success('Answer deleted.');
                   await loadAnswers(user_test_id);
                 } catch (err) {
-                  toast({ description: err?.message || 'Failed to delete answer', variant: 'destructive' });
+                  toast.error(err?.message || 'Failed to delete answer');
                 }
               }}>Delete</AdminActionButton>
             </div>
@@ -171,10 +171,10 @@ export default function AdminUserTests() {
               if (!window.confirm('Delete this user test record?')) return;
               try {
                 await deleteAdminUserTest(record.user_test_id);
-                toast({ description: 'User test deleted.' });
+                toast.success('User test deleted.');
                 await loadData();
               } catch (err) {
-                toast({ description: err?.message || 'Failed to delete record', variant: 'destructive' });
+                toast.error(err?.message || 'Failed to delete record');
               }
             }}>Delete</AdminActionButton>
           </div>

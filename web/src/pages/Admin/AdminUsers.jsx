@@ -6,6 +6,7 @@ import AdminActionButton from '@/components/admin/AdminActionButton';
 import UserFormDialog from '@/components/admin/UserFormDialog';
 import { useToast } from '@/hooks/use-toast';
 import { fetchAdminUsers, createAdminUser, updateAdminUser, deleteAdminUser, toggleAdminUserEmailNotification } from '@/api';
+import { formatDate, toTimestamp } from '@/lib/datetime';
 
 const columnHelper = createColumnHelper();
 
@@ -24,7 +25,7 @@ export default function AdminUsers() {
       if (Array.isArray(list) && list.length) setRows(list);
     } catch (err) {
       setError(err?.message || 'Failed to load users');
-      toast({ description: 'Failed to load users', variant: 'destructive' });
+      toast.error('Failed to load users');
     } finally {
       setLoading(false);
     }
@@ -37,15 +38,15 @@ export default function AdminUsers() {
     try {
       if (draft[pk]) {
         await updateAdminUser(draft[pk], draft);
-        toast({ description: 'User updated successfully.' });
+        toast.success('User updated successfully.');
       } else {
         const payload = { ...draft };
         await createAdminUser(payload);
-        toast({ description: 'User created successfully.' });
+        toast.success('User created successfully.');
       }
       await loadData();
     } catch (err) {
-      toast({ description: err?.message || 'Failed to save user', variant: 'destructive' });
+      toast.error(err?.message || 'Failed to save user');
       throw err;
     }
   }, [loadData, toast]);
@@ -76,15 +77,11 @@ export default function AdminUsers() {
     }),
     columnHelper.accessor('registration_date', {
       header: 'Registered',
-      cell: info => {
-        const v = info.getValue();
-        if (!v) return '—';
-        try { return new Date(v).toISOString().slice(0,10); } catch { return v; }
-      },
+      cell: info => formatDate(info.getValue()),
       sortingFn: (rowA, rowB, columnId) => {
-        const a = rowA.getValue(columnId);
-        const b = rowB.getValue(columnId);
-        const at = a ? Date.parse(a) : 0; const bt = b ? Date.parse(b) : 0; return at === bt ? 0 : at > bt ? 1 : -1;
+        const a = toTimestamp(rowA.getValue(columnId));
+        const b = toTimestamp(rowB.getValue(columnId));
+        return a === b ? 0 : a > b ? 1 : -1;
       },
     }),
     columnHelper.display({
@@ -98,10 +95,10 @@ export default function AdminUsers() {
             <AdminActionButton variant={record.enable_email_notification ? 'outline' : 'default'} onClick={async () => {
               try {
                 await toggleAdminUserEmailNotification(record.user_id, !record.enable_email_notification);
-                toast({ description: 'Email notification toggled.' });
+                toast.success('Email notification toggled.');
                 await loadData();
               } catch (err) {
-                toast({ description: err?.message || 'Failed to toggle notification', variant: 'destructive' });
+                toast.error(err?.message || 'Failed to toggle notification');
               }
             }}>{record.enable_email_notification ? 'Disable Email' : 'Enable Email'}</AdminActionButton>
             <AdminActionButton variant="destructive" onClick={async () => {
@@ -109,10 +106,10 @@ export default function AdminUsers() {
               if (!window.confirm('Delete this user? This action is irreversible.')) return;
               try {
                 await deleteAdminUser(record.user_id);
-                toast({ description: 'User deleted.' });
+                toast.success('User deleted.');
                 await loadData();
               } catch (err) {
-                toast({ description: err?.message || 'Failed to delete user', variant: 'destructive' });
+                toast.error(err?.message || 'Failed to delete user');
               }
             }}>Delete</AdminActionButton>
           </div>

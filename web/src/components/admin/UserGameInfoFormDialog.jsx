@@ -11,6 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ADMIN_USER_GAMEINFO_PRIMARY_KEY } from '@/constants';
+import { fetchAdminUsers } from '@/api';
+import RemoteSelect from '../ui/remote-select';
 
 /**
  * UserGameInfoFormDialog
@@ -73,15 +75,26 @@ export function UserGameInfoFormDialog({ open, onOpenChange, record, onSave, pri
           <div className="grid gap-4">
             <div className="space-y-1">
               <Label>User Name</Label>
-              <Input
+              {/* <Input
                 name="username"
                 value={form.username || ''}
                 onChange={handleChange}
                 placeholder="Jane Developer"
                 disabled={!isCreate && !!record.username}
+              /> */}
+              <RemoteSelect
+                id="user"
+                value={String(form.user ?? '')}
+                onChange={(val) => setForm(f => ({ ...f, user: val }))}
+                fetcher={fetchAdminUsers}
+                getValue={(u) => u.id}
+                getLabel={(u) => u.username}
+                placeholder="Select a user"
+                enabled={open}
+                disabled={!isCreate && !!(record?.user)}
               />
             </div>
-            <div className="space-y-1">
+            {/* <div className="space-y-1">
               <Label>User ID</Label>
               <Input
                 name="user_id"
@@ -90,7 +103,7 @@ export function UserGameInfoFormDialog({ open, onOpenChange, record, onSave, pri
                 placeholder="user_123"
                 disabled={!isCreate && !!record.user_id}
               />
-            </div>
+            </div> */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <Label>XP Value</Label>

@@ -61,11 +61,11 @@ export default function ChapterFormDialog({ open, onOpenChange, record, onSave, 
           )}
           <div className="grid gap-4">
             <div className="space-y-1">
-              <Label htmlFor="course_id">Course</Label>
+              <Label htmlFor="course">Course</Label>
               <RemoteSelect
-                id="course_id"
-                value={form.course_id || ''}
-                onChange={(value) => setForm(f => ({ ...f, course_id: value }))}
+                id="course"
+                value={form.course || ''}
+                onChange={(value) => setForm(f => ({ ...f, course: value }))}
                 fetcher={(signal) => fetchAdminCourses(signal)}
                 getValue={(c) => c.course_id}
                 getLabel={(c) => c.title}
@@ -82,7 +82,7 @@ export default function ChapterFormDialog({ open, onOpenChange, record, onSave, 
               <Input id="chapter_id" name="chapter_id" value={form.chapter_id || ''} onChange={handleChange} placeholder="chap_001" />
             </div> */}
             <div className="space-y-1">
-              <Label htmlFor="order_index">Order Index</Label>
+              <Label htmlFor="order_index">Chapter Number</Label>
               <Input id="order_index" name="order_index" type="number" min="1" step="1" value={form.order_index ?? ''} onChange={(e) => setForm(f => ({ ...f, order_index: e.target.value === '' ? '' : Number(e.target.value) }))} />
             </div>
             <div className="space-y-1">

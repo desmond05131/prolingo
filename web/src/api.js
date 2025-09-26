@@ -112,43 +112,43 @@ export async function toggleAdminUserEmailNotification(id, enable) {
 
 // --- User Game Infos admin helpers ---
 export async function fetchAdminUserGameInfos(signal) {
-    const { data } = await api.get('/admin/user-gameinfos/', { signal });
+    const { data } = await api.get('/admin/gameinfos/', { signal });
     return data; // expected array
 }
 
 export async function updateAdminUserGameInfo(id, payload) {
-    const { data } = await api.put(`/admin/user-gameinfos/${id}`, payload);
+    const { data } = await api.put(`/admin/gameinfos/${id}`, payload);
     return data; // updated record
 }
 
 export async function createAdminUserGameInfo(payload) {
-    const { data } = await api.post('/admin/user-gameinfos/', payload);
+    const { data } = await api.post('/admin/gameinfos/', payload);
     return data; // created record
 }
 
 export async function deleteAdminUserGameInfo(id) {
-    const { data } = await api.delete(`/admin/user-gameinfos/${id}`);
+    const { data } = await api.delete(`/admin/gameinfos/${id}`);
     return data; // maybe { success: true }
 }
 
 // --- Daily Streaks admin helpers ---
 export async function fetchAdminDailyStreaks(signal) {
-    const { data } = await api.get('/admin/daily-streaks/', { signal });
+    const { data } = await api.get('/admin/dailystreaks/', { signal });
     return data; // expected array
 }
 
 export async function updateAdminDailyStreak(id, payload) {
-    const { data } = await api.put(`/admin/daily-streaks/${id}`, payload);
+    const { data } = await api.put(`/admin/dailystreaks/${id}`, payload);
     return data; // updated record
 }
 
 export async function createAdminDailyStreak(payload) {
-    const { data } = await api.post('/admin/daily-streaks/', payload);
+    const { data } = await api.post('/admin/dailystreaks/', payload);
     return data; // created record
 }
 
 export async function deleteAdminDailyStreak(id) {
-    const { data } = await api.delete(`/admin/daily-streaks/${id}`);
+    const { data } = await api.delete(`/admin/dailystreaks/${id}`);
     return data; // maybe { success: true }
 }
 

@@ -6,12 +6,13 @@ import AdminActionButton from '@/components/admin/AdminActionButton';
 import UserGameInfoFormDialog from '@/components/admin/UserGameInfoFormDialog';
 import { useToast } from '@/hooks/use-toast';
 import { fetchAdminUserGameInfos, updateAdminUserGameInfo, createAdminUserGameInfo, deleteAdminUserGameInfo } from '@/api';
+import { formatDateTime } from '@/lib/datetime';
 
 const columnHelper = createColumnHelper();
 
 export default function AdminUserGameInfos() {
   const { toast } = useToast();
-  const [rows, setRows] = useState(() => MOCK_ADMIN_USER_GAMEINFOS);
+  const [rows, setRows] = useState(() => []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeRecord, setActiveRecord] = useState(null);
@@ -23,7 +24,7 @@ export default function AdminUserGameInfos() {
       if (Array.isArray(list) && list.length) setRows(list);
     } catch (err) {
       setError(err?.message || 'Failed to load user game infos');
-      toast({ description: 'Failed to load user game infos', variant: 'destructive' });
+      toast.error('Failed to load user game infos');
     } finally { setLoading(false); }
   }, [toast]);
 
@@ -36,27 +37,27 @@ export default function AdminUserGameInfos() {
     try {
       if (updated[pk]) {
         await updateAdminUserGameInfo(updated[pk], updated);
-        toast({ description: 'User game info updated successfully.' });
+        toast.success('User game info updated successfully.');
       } else {
         const payload = { ...updated };
         await createAdminUserGameInfo(payload);
-        toast({ description: 'User game info created successfully.' });
+        toast.success('User game info created successfully.');
       }
       await loadData();
     } catch (err) {
-      toast({ description: err?.message || 'Failed to save record', variant: 'destructive' });
+      toast.error(err?.message || 'Failed to save record');
       throw err;
     }
   }, [loadData, toast]);
 
   const columns = useMemo(() => [
+    columnHelper.accessor('user', { header: 'User ID', sortingFn: 'alphanumeric' }),
     columnHelper.accessor('username', { header: 'Username', sortingFn: 'alphanumeric' }),
-    columnHelper.accessor('user_id', { header: 'User ID', sortingFn: 'alphanumeric' }),
     columnHelper.accessor('xp_value', { header: 'XP', sortingFn: 'alphanumeric' }),
     columnHelper.accessor('energy_value', { header: 'Energy', sortingFn: 'alphanumeric' }),
     columnHelper.accessor('energy_last_updated_date', {
       header: 'Energy Updated',
-      cell: info => <span className="text-neutral-300">{info.getValue() ? new Date(info.getValue()).toLocaleString() : '—'}</span>,
+      cell: info => <span className="text-neutral-300">{info.getValue() ? formatDateTime(info.getValue()) : '—'}</span>,
       sortingFn: (a,b,id) => {
         const va = a.getValue(id); const vb = b.getValue(id);
         const ta = va ? Date.parse(va) : 0; const tb = vb ? Date.parse(vb) : 0;
@@ -74,10 +75,10 @@ export default function AdminUserGameInfos() {
               if (!window.confirm('Delete this user game info record?')) return;
               try {
                 await deleteAdminUserGameInfo(record.gameinfo_id);
-                toast({ description: 'User game info deleted.' });
+                toast.success('User game info deleted.');
                 await loadData();
               } catch (err) {
-                toast({ description: err?.message || 'Failed to delete record', variant: 'destructive' });
+                toast.error(err?.message || 'Failed to delete record');
               }
             }}>Delete</AdminActionButton>
           </div>
@@ -91,7 +92,7 @@ export default function AdminUserGameInfos() {
       <header className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <h2 className="text-2xl font-semibold">User Game Infos</h2>
         <div>
-          <button
+          {/* <button
             className="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-neutral-800 bg-neutral-900 text-neutral-100 border border-neutral-800 hover:border-neutral-700 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
             onClick={() => setActiveRecord({
               gameinfo_id: undefined,
@@ -101,7 +102,7 @@ export default function AdminUserGameInfos() {
               energy_value: 0,
               energy_last_updated_date: ''
             })}
-          >Create User Game Info</button>
+          >Create User Game Info</button> */}
         </div>
       </header>
       <section>

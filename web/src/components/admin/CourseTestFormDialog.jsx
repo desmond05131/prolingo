@@ -68,8 +68,8 @@ export default function CourseTestFormDialog({ open, onOpenChange, record, onSav
                 <Label htmlFor="course_id">Course</Label>
                 <RemoteSelect
                   id="course_id"
-                  value={form.course_id || ''}
-                  onChange={(val) => setForm(f => ({ ...f, course_id: val || '', chapter_id: '' }))}
+                  value={String(form.course) || ''}
+                  onChange={(val) => setForm(f => ({ ...f, course: val || '', chapter: '' }))}
                   fetcher={fetchAdminCourses}
                   getValue={(x) => x?.course_id}
                   getLabel={(x) => x?.title}
@@ -80,14 +80,14 @@ export default function CourseTestFormDialog({ open, onOpenChange, record, onSav
                 <Label htmlFor="chapter_id">Chapter</Label>
                 <RemoteSelect
                   id="chapter_id"
-                  value={form.chapter_id || ''}
-                  onChange={(val) => setForm(f => ({ ...f, chapter_id: val || '' }))}
-                  fetcher={(signal) => fetchAdminChapters(signal).then(list => Array.isArray(list) ? list.filter(c => c?.course_id === form.course_id) : [])}
+                  value={String(form.chapter) || ''}
+                  onChange={(val) => setForm(f => ({ ...f, chapter: val || '' }))}
+                  fetcher={(signal) => fetchAdminChapters(signal).then(list => Array.isArray(list) ? list.filter(c => c?.course == form.course) : [])}
                   getValue={(x) => x?.chapter_id}
                   getLabel={(x) => x?.title}
-                  placeholder={form.course_id ? 'Select a chapter' : 'Select a course first'}
-                  enabled={!!form.course_id}
-                  disabled={!form.course_id}
+                  placeholder={form.course ? 'Select a chapter' : 'Select a course first'}
+                  enabled={!!form.course}
+                  disabled={!form.course}
                 />
               </div>
             </div>
@@ -97,7 +97,7 @@ export default function CourseTestFormDialog({ open, onOpenChange, record, onSav
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label htmlFor="order_index">Order Index</Label>
+                <Label htmlFor="order_index">Test Number</Label>
                 <Input id="order_index" name="order_index" type="number" min="1" step="1" value={form.order_index ?? ''} onChange={(e) => setForm(f => ({ ...f, order_index: e.target.value === '' ? '' : Number(e.target.value) }))} />
               </div>
               <div className="space-y-1">

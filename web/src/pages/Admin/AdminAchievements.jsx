@@ -23,7 +23,7 @@ export default function AdminAchievements() {
       if (Array.isArray(list) && list.length) setRows(list);
     } catch (err) {
       setError(err?.message || 'Failed to load achievements');
-      toast({ description: 'Failed to load achievements', variant: 'destructive' });
+      toast.error('Failed to load achievements');
     } finally {
       setLoading(false);
     }
@@ -39,15 +39,15 @@ export default function AdminAchievements() {
     try {
       if (updated[pk]) {
         await updateAdminAchievement(updated[pk], updated);
-        toast({ description: 'Achievement updated successfully.' });
+        toast.success('Achievement updated successfully.');
       } else {
         const payload = { ...updated };
         await createAdminAchievement(payload);
-        toast({ description: 'Achievement created successfully.' });
+        toast.success('Achievement created successfully.');
       }
       await loadData();
     } catch (err) {
-      toast({ description: err?.message || 'Failed to save achievement', variant: 'destructive' });
+      toast.error(err?.message || 'Failed to save achievement');
       throw err;
     }
   }, [loadData, toast]);
@@ -67,7 +67,6 @@ export default function AdminAchievements() {
         const record = info.row.original;
         return (
           <div className="flex gap-1">
-            <AdminActionButton onClick={() => console.log('View', record)}>View</AdminActionButton>
             <AdminActionButton variant="outline" onClick={() => setActiveRecord(record)}>Modify</AdminActionButton>
             <AdminActionButton variant="destructive" onClick={async () => {
               const id = record.achievement_id;
@@ -75,10 +74,10 @@ export default function AdminAchievements() {
               if (!window.confirm('Delete this achievement? This cannot be undone.')) return;
               try {
                 await deleteAdminAchievement(id);
-                toast({ description: 'Achievement deleted.' });
+                toast.success('Achievement deleted.');
                 await loadData();
               } catch (err) {
-                toast({ description: err?.message || 'Failed to delete achievement', variant: 'destructive' });
+                toast.error(err?.message || 'Failed to delete achievement');
               }
             }}>Delete</AdminActionButton>
           </div>

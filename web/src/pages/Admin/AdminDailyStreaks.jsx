@@ -11,7 +11,7 @@ const columnHelper = createColumnHelper();
 
 export default function AdminDailyStreaks() {
   const { toast } = useToast();
-  const [rows, setRows] = useState(() => MOCK_ADMIN_DAILY_STREAKS);
+  const [rows, setRows] = useState(() => []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeRecord, setActiveRecord] = useState(null);
@@ -23,7 +23,7 @@ export default function AdminDailyStreaks() {
       if (Array.isArray(list) && list.length) setRows(list);
     } catch (err) {
       setError(err?.message || 'Failed to load daily streaks');
-      toast({ description: 'Failed to load daily streaks', variant: 'destructive' });
+      toast.error('Failed to load daily streaks');
     } finally { setLoading(false); }
   }, [toast]);
 
@@ -36,21 +36,21 @@ export default function AdminDailyStreaks() {
     try {
       if (updated[pk]) {
         await updateAdminDailyStreak(updated[pk], updated);
-        toast({ description: 'Daily streak updated successfully.' });
+        toast.success('Daily streak updated successfully.');
       } else {
         await createAdminDailyStreak({ ...updated });
-        toast({ description: 'Daily streak created successfully.' });
+        toast.success('Daily streak created successfully.');
       }
       await loadData();
     } catch (err) {
-      toast({ description: err?.message || 'Failed to save record', variant: 'destructive' });
+      toast.error(err?.message || 'Failed to save record');
       throw err;
     }
   }, [loadData, toast]);
 
   const columns = useMemo(() => [
+    // columnHelper.accessor('user', { header: 'User ID', sortingFn: 'alphanumeric' }),
     columnHelper.accessor('username', { header: 'Username', sortingFn: 'alphanumeric' }),
-    columnHelper.accessor('user_id', { header: 'User ID', sortingFn: 'alphanumeric' }),
     columnHelper.accessor('daily_streak_date', { header: 'Date', sortingFn: 'alphanumeric' }),
     columnHelper.accessor('is_streak_saver', { header: 'Streak Saver Used', cell: info => info.getValue() ? 'Yes' : 'No', sortingFn: 'alphanumeric' }),
     columnHelper.display({
@@ -58,16 +58,16 @@ export default function AdminDailyStreaks() {
         const record = info.row.original;
         return (
           <div className="flex gap-1">
-            <AdminActionButton variant="outline" onClick={() => setActiveRecord(record)}>Modify</AdminActionButton>
+            {/* <AdminActionButton variant="outline" onClick={() => setActiveRecord(record)}>Modify</AdminActionButton> */}
             <AdminActionButton variant="destructive" onClick={async () => {
               if (!record.daily_streak_id) return;
               if (!window.confirm('Delete this daily streak record?')) return;
               try {
                 await deleteAdminDailyStreak(record.daily_streak_id);
-                toast({ description: 'Daily streak deleted.' });
+                toast.success('Daily streak deleted.');
                 await loadData();
               } catch (err) {
-                toast({ description: err?.message || 'Failed to delete record', variant: 'destructive' });
+                toast.error(err?.message || 'Failed to delete record');
               }
             }}>Delete</AdminActionButton>
           </div>

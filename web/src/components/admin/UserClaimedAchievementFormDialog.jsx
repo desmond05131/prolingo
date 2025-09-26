@@ -11,6 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ADMIN_USER_CLAIMED_ACHIEVEMENT_PRIMARY_KEY } from '@/constants';
+import { fetchAdminAchievements, fetchAdminUsers } from '@/api';
+import RemoteSelect from '../ui/remote-select';
 
 /**
  * UserClaimedAchievementFormDialog
@@ -71,20 +73,42 @@ export default function UserClaimedAchievementFormDialog({ open, onOpenChange, r
           )}
           <div className="grid gap-4">
             <div className="space-y-1">
-              <Label>User ID</Label>
-              <Input name="user_id" value={form.user_id || ''} onChange={handleChange} placeholder="user_123" />
+              <Label>User</Label>
+              {/* <Input name="user_id" value={form.user_id || ''} onChange={handleChange} placeholder="user_123" /> */}
+              <RemoteSelect
+                id="user"
+                value={String(form.user ?? '')}
+                onChange={(val) => setForm(f => ({ ...f, user: val }))}
+                fetcher={fetchAdminUsers}
+                getValue={(u) => u.id}
+                getLabel={(u) => u.username}
+                placeholder="Select a user"
+                enabled={open}
+                disabled={!isCreate && !!(record?.user)}
+              />
             </div>
-            <div className="space-y-1">
+            {/* <div className="space-y-1">
               <Label>Username (optional)</Label>
               <Input name="username" value={form.username || ''} onChange={handleChange} placeholder="Jane Developer" />
-            </div>
+            </div> */}
             <div className="space-y-1">
-              <Label>Achievement ID</Label>
-              <Input name="achievement_id" value={form.achievement_id || ''} onChange={handleChange} placeholder="achv_001" />
+              <Label>Achievement</Label>
+              <RemoteSelect
+                id="achievement"
+                value={String(form.achievement ?? '')}
+                onChange={(val) => setForm(f => ({ ...f, achievement: val }))}
+                fetcher={fetchAdminAchievements}
+                getValue={(a) => a.achievement_id}
+                getLabel={(a) => a.reward_type === 'badge' ? `Badge - ${a.reward_content_description}` : `${a.reward_amount}${a.reward_type.toUpperCase()}`}
+                placeholder="Select an achievement"
+                enabled={open}
+                disabled={!isCreate && !!(record?.achievement)}
+              />
+              {/* <Input name="achievement_id" value={form.achievement_id || ''} onChange={handleChange} placeholder="achv_001" /> */}
             </div>
             <div className="space-y-1">
               <Label htmlFor="claimed_date">Claimed Date</Label>
-              <Input id="claimed_date" name="claimed_date" type="date" value={form.claimed_date || ''} onChange={handleChange} />
+              <Input id="claimed_date" name="claimed_date" type="datetime" value={form.claimed_date || ''} onChange={handleChange} />
             </div>
           </div>
           <DialogFooter className="pt-2">

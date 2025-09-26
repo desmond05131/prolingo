@@ -26,7 +26,7 @@ export default function AdminFeedback() {
       }
     } catch (err) {
       setError(err?.message || 'Failed to load feedback');
-      toast({ description: 'Failed to load feedback', variant: 'destructive' });
+      toast.error('Failed to load feedback');
     } finally {
       setLoading(false);
     }
@@ -41,15 +41,15 @@ export default function AdminFeedback() {
     try {
       if (updated[pk]) {
         await updateAdminFeedback(updated[pk], updated);
-        toast({ description: 'Feedback updated successfully.' });
+        toast.success('Feedback updated successfully.');
       } else {
         const payload = { ...updated };
         await createAdminFeedback(payload);
-        toast({ description: 'Feedback created successfully.' });
+        toast.success('Feedback created successfully.');
       }
       await loadData();
     } catch (err) {
-      toast({ description: err?.message || 'Failed to save feedback', variant: 'destructive' });
+      toast.error(err?.message || 'Failed to save feedback');
       throw err;
     }
   }, [loadData, toast]);
@@ -110,10 +110,10 @@ export default function AdminFeedback() {
               if (!window.confirm('Delete this feedback entry? This cannot be undone.')) return;
               try {
                 await deleteAdminFeedback(record.feedback_id);
-                toast({ description: 'Feedback deleted.' });
+                toast.success('Feedback deleted.');
                 await loadData();
               } catch (err) {
-                toast({ description: err?.message || 'Failed to delete feedback', variant: 'destructive' });
+                toast.error(err?.message || 'Failed to delete feedback');
               }
             }}>Delete</AdminActionButton>
           </div>

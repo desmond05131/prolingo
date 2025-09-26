@@ -13,6 +13,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { ADMIN_SUBSCRIPTION_PRIMARY_KEY } from '@/constants';
+import RemoteSelect from '@/components/ui/remote-select';
+import { fetchAdminUsers } from '@/api';
 
 /**
  * SubscriptionFormDialog
@@ -41,6 +43,10 @@ export function SubscriptionFormDialog({ open, onOpenChange, record, onSave, pri
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm(f => ({ ...f, [name]: value }));
+  };
+  const handleCheckbox = (e) => {
+    const { name, checked } = e.target;
+    setForm(f => ({ ...f, [name]: checked }));
   };
 
   const handleSubmit = async (e) => {
@@ -79,27 +85,28 @@ export function SubscriptionFormDialog({ open, onOpenChange, record, onSave, pri
           )}
           <div className="grid gap-4">
             <div className="space-y-1">
-              <Label>User Name</Label>
-              <Input
-                name="userName"
-                value={form.userName || ''}
-                onChange={handleChange}
-                placeholder="Jane Developer"
-                disabled={!isCreate && !!record.userName}
+              <Label htmlFor="user_id">User</Label>
+              <RemoteSelect
+                id="user_id"
+                value={String(form.user_id ?? '')}
+                onChange={(val) => setForm(f => ({ ...f, user_id: val }))}
+                fetcher={fetchAdminUsers}
+                getValue={(u) => u.id}
+                getLabel={(u) => u.username}
+                placeholder="Select a user"
+                enabled={open}
+                disabled={!isCreate && !!(record?.user_id)}
               />
             </div>
             <div className="space-y-1">
-              <Label>Plan</Label>
-              <Select value={form.plan} onValueChange={(v) => setForm(f => ({ ...f, plan: v }))}>
+              <Label>Type</Label>
+              <Select value={form.type} onValueChange={(v) => setForm(f => ({ ...f, type: v }))}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select plan" />
+                  <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="FREE">FREE</SelectItem>
-                  <SelectItem value="BASIC">BASIC</SelectItem>
-                  <SelectItem value="PRO">PRO</SelectItem>
-                  <SelectItem value="PREMIUM">PREMIUM</SelectItem>
-                  <SelectItem value="TEAM">TEAM</SelectItem>
+                  <SelectItem value="month">Month</SelectItem>
+                  <SelectItem value="year">Year</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -110,36 +117,28 @@ export function SubscriptionFormDialog({ open, onOpenChange, record, onSave, pri
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="pending">Pending Payment</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="canceled">Canceled</SelectItem>
                   <SelectItem value="expired">Expired</SelectItem>
-                  <SelectItem value="trialing">Trialing</SelectItem>
-                  <SelectItem value="past_due">Past Due</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="renewsOn">Renew / End At</Label>
-              <Input id="renewsOn" name="renewsOn" type="date" value={form.renewsOn || ''} onChange={handleChange} />
+              <Label htmlFor="start_date">Start Date</Label>
+              <Input id="start_date" name="start_date" type="datetime" value={form.start_date || ''} onChange={handleChange} />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="end_date">End Date</Label>
+              <Input id="end_date" name="end_date" type="datetime" value={form.end_date || ''} onChange={handleChange} />
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1 col-span-2">
                 <Label htmlFor="amount">Amount</Label>
                 <Input id="amount" name="amount" type="number" min="0" step="0.01" value={form.amount ?? ''} onChange={(e) => setForm(f => ({ ...f, amount: e.target.value === '' ? '' : Number(e.target.value) }))} />
               </div>
-              <div className="space-y-1">
-                <Label>Currency</Label>
-                <Select value={form.currency} onValueChange={(v) => setForm(f => ({ ...f, currency: v }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Currency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="USD">USD</SelectItem>
-                    <SelectItem value="EUR">EUR</SelectItem>
-                    <SelectItem value="GBP">GBP</SelectItem>
-                    <SelectItem value="JPY">JPY</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="flex items-end gap-2">
+                <input id="is_renewable" name="is_renewable" type="checkbox" checked={!!form.is_renewable} onChange={handleCheckbox} className="h-4 w-4 accent-neutral-400" />
+                <Label htmlFor="is_renewable" className="mb-0">Renewable</Label>
               </div>
             </div>
           </div>

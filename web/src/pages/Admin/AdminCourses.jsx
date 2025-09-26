@@ -49,7 +49,7 @@ export default function AdminCourses() {
   const [parentTestId, setParentTestId] = useState(null);
   const [questionsModalTest, setQuestionsModalTest] = useState(null);
 
-  const [questionsByTest, setQuestionsByTest] = useState({});
+  const [questionsByTest, setQuestionsByTest] = useState([]);
   const [choicesByQuestion, setChoicesByQuestion] = useState({});
 
   const loadTests = useCallback(async () => {
@@ -59,7 +59,7 @@ export default function AdminCourses() {
       if (Array.isArray(list) && list.length) setRows(list);
     } catch (err) {
       setError(err?.message || 'Failed to load tests');
-      toast({ description: 'Failed to load tests', variant: 'destructive' });
+      toast.error('Failed to load tests');
     } finally { setLoading(false); }
   }, [toast]);
 
@@ -70,18 +70,18 @@ export default function AdminCourses() {
   const loadQuestions = useCallback(async (testId) => {
     try {
       const list = await fetchAdminQuestions(testId);
-      if (!Array.isArray(list) || list.length === 0) throw new Error('No API questions');
-      setQuestionsByTest(prev => ({ ...prev, [testId]: list }));
+      // if (!Array.isArray(list) || list.length === 0) throw new Error('No API questions');
+      setQuestionsByTest(list);
     } catch {
-      const fallback = MOCK_ADMIN_QUESTIONS.filter(q => q.test_id === testId);
-      setQuestionsByTest(prev => ({ ...prev, [testId]: fallback }));
+      // const fallback = MOCK_ADMIN_QUESTIONS.filter(q => q.test_id === testId);
+      setQuestionsByTest([]);
     }
   }, []);
 
   const loadChoices = useCallback(async (questionId) => {
     try {
       const list = await fetchAdminQuestionChoices(questionId);
-      if (!Array.isArray(list) || list.length === 0) throw new Error('No API choices');
+      // if (!Array.isArray(list) || list.length === 0) throw new Error('No API choices');
       setChoicesByQuestion(prev => ({ ...prev, [questionId]: list }));
     } catch {
       const fallback = MOCK_ADMIN_QUESTION_CHOICES.filter(c => c.question_id === questionId);
@@ -94,14 +94,14 @@ export default function AdminCourses() {
     try {
       if (updated[pk]) {
         await updateAdminTest(updated[pk], updated);
-        toast({ description: 'Test updated successfully.' });
+        toast.success('Test updated successfully.');
       } else {
         await createAdminTest(updated);
-        toast({ description: 'Test created successfully.' });
+        toast.success('Test created successfully.');
       }
       await loadTests();
     } catch (err) {
-      toast({ description: err?.message || 'Failed to save test', variant: 'destructive' });
+      toast.error(err?.message || 'Failed to save test');
       throw err;
     }
   }, [loadTests, toast]);
@@ -110,15 +110,21 @@ export default function AdminCourses() {
     const pk = ADMIN_QUESTION_PRIMARY_KEY;
     try {
       if (updated[pk]) {
-        await updateAdminQuestion(updated[pk], updated);
-        toast({ description: 'Question updated successfully.' });
+        const saved = await updateAdminQuestion(updated[pk], updated);
+        toast.success('Question updated successfully.');
+        if (updated.test_id) await loadQuestions(updated.test_id);
+        return saved;
       } else {
-        await createAdminQuestion(updated);
-        toast({ description: 'Question created successfully.' });
+        // New question; ensure it has correct_answer_id
+        updated.correct_answer_text = updated.correct_answer_text || "-";
+
+        const created = await createAdminQuestion(updated);
+        toast.success('Question created successfully.');
+        if (updated.test_id) await loadQuestions(updated.test_id);
+        return created;
       }
-      if (updated.test_id) await loadQuestions(updated.test_id);
     } catch (err) {
-      toast({ description: err?.message || 'Failed to save question', variant: 'destructive' });
+      toast.error(err?.message || 'Failed to save question');
       throw err;
     }
   }, [loadQuestions, toast]);
@@ -127,14 +133,16 @@ export default function AdminCourses() {
     try {
       if (updated?.course_id) {
         await updateAdminCourse(updated.course_id, updated);
-        toast({ description: 'Course updated successfully.' });
+        toast.success('Course updated successfully.');
+        loadTests();
       } else {
         await createAdminCourse(updated);
-        toast({ description: 'Course created successfully.' });
+        toast.success('Course created successfully.');
+        loadTests();
       }
       setActiveCourse(null);
     } catch (err) {
-      toast({ description: err?.message || 'Failed to save course', variant: 'destructive' });
+      toast.error(err?.message || 'Failed to save course');
       throw err;
     }
   }, [toast]);
@@ -143,14 +151,16 @@ export default function AdminCourses() {
     try {
       if (updated?.chapter_id) {
         await updateAdminChapter(updated.chapter_id, updated);
-        toast({ description: 'Chapter updated successfully.' });
+        toast.success('Chapter updated successfully.');
+        loadTests();
       } else {
         await createAdminChapter(updated);
-        toast({ description: 'Chapter created successfully.' });
+        toast.success('Chapter created successfully.');
+        loadTests();
       }
       setActiveChapter(null);
     } catch (err) {
-      toast({ description: err?.message || 'Failed to save chapter', variant: 'destructive' });
+      toast.error(err?.message || 'Failed to save chapter');
       throw err;
     }
   }, [toast]);
@@ -190,10 +200,10 @@ export default function AdminCourses() {
               if (!window.confirm('Delete this test?')) return;
               try {
                 await deleteAdminTest(record.test_id);
-                toast({ description: 'Test deleted.' });
+                toast.success('Test deleted.');
                 await loadTests();
               } catch (err) {
-                toast({ description: err?.message || 'Failed to delete test', variant: 'destructive' });
+                toast.error(err?.message || 'Failed to delete test');
               }
             }}>Delete</AdminActionButton>
           </div>
@@ -240,7 +250,11 @@ export default function AdminCourses() {
       <CourseTestFormDialog
         open={!!activeTest}
         onOpenChange={(o) => { if (!o) setActiveTest(null); }}
-        record={activeTest}
+        record={{
+          course: activeTest?.course?.course_id,
+          chapter: activeTest?.chapter?.chapter_id,
+          ...activeTest?.test
+        }}
         onSave={handleSaveTest}
       />
       <QuestionFormDialog
@@ -249,6 +263,37 @@ export default function AdminCourses() {
         record={activeQuestion}
         parentTestId={parentTestId}
         onSave={handleSaveQuestion}
+        // Choices management props
+        choices={activeQuestion?.question_id ? choicesByQuestion[activeQuestion.question_id] : []}
+        loadChoices={async (qid) => { await loadChoices(qid); }}
+        onAddChoice={async (qid, text, orderIndex) => {
+          try {
+            await createAdminQuestionChoice({ question: qid, text, order_index: orderIndex });
+            await loadChoices(qid);
+            toast.success('Choice added.');
+          } catch (err) {
+            toast.error(err?.message || 'Failed to add choice');
+          }
+        }}
+        onEditChoice={async (choiceId, qid, newText) => {
+          try {
+            const choice = (choicesByQuestion[qid] || []).find(c => c.choice_id === choiceId);
+            await updateAdminQuestionChoice(choiceId, { ...choice, text: newText });
+            await loadChoices(qid);
+            toast.success('Choice updated.');
+          } catch (err) {
+            toast.error(err?.message || 'Failed to update choice');
+          }
+        }}
+        onDeleteChoice={async (choiceId, qid) => {
+          try {
+            await deleteAdminQuestionChoice(choiceId);
+            await loadChoices(qid);
+            toast.success('Choice deleted.');
+          } catch (err) {
+            toast.error(err?.message || 'Failed to delete choice');
+          }
+        }}
       />
       <CourseFormDialog
         open={!!activeCourse}
@@ -266,57 +311,22 @@ export default function AdminCourses() {
         open={!!questionsModalTest}
         onOpenChange={(o) => { if (!o) setQuestionsModalTest(null); }}
         testRecord={questionsModalTest}
-        questions={questionsModalTest ? questionsByTest[questionsModalTest.test_id] : null}
+        questions={questionsModalTest ? questionsByTest.filter(x => x.test == questionsModalTest.test.test_id) : null}
         onAddQuestion={() => {
-          const testId = questionsModalTest?.test_id;
+          const testId = questionsModalTest?.test.test_id;
           setParentTestId(testId || null);
-          const nextOrder = ((questionsByTest[testId]?.length) || 0) + 1;
-          setActiveQuestion({ question_id: undefined, test_id: testId, text: '', type: 'MCQ', correct_answer_text: '', order_index: nextOrder });
+          const nextOrder = ((questionsByTest.length) || 0) + 1;
+          setActiveQuestion({ question_id: undefined, test: testId, text: '', type: 'mcq', correct_answer_text: '', order_index: nextOrder });
         }}
         onEditQuestion={(q) => setActiveQuestion(q)}
         onDeleteQuestion={async (q) => {
           if (!window.confirm('Delete this question?')) return;
           try {
             await deleteAdminQuestion(q.question_id);
-            toast({ description: 'Question deleted.' });
+            toast.success('Question deleted.');
             if (q.test_id) await loadQuestions(q.test_id);
           } catch (err) {
-            toast({ description: err?.message || 'Failed to delete question', variant: 'destructive' });
-          }
-        }}
-        choicesByQuestion={choicesByQuestion}
-        loadChoices={loadChoices}
-        onAddChoice={async (question) => {
-          const text = prompt('Choice text');
-          if (!text) return;
-          try {
-            const count = (choicesByQuestion[question.question_id]?.length) || 0;
-            await createAdminQuestionChoice({ question_id: question.question_id, text, order_index: count + 1 });
-            await loadChoices(question.question_id);
-            toast({ description: 'Choice added.' });
-          } catch (err) {
-            toast({ description: err?.message || 'Failed to add choice', variant: 'destructive' });
-          }
-        }}
-        onEditChoice={async (choice) => {
-          const text = prompt('Edit choice', choice.text);
-          if (text == null) return;
-          try {
-            await updateAdminQuestionChoice(choice.choice_id, { ...choice, text });
-            await loadChoices(choice.question_id);
-            toast({ description: 'Choice updated.' });
-          } catch (err) {
-            toast({ description: err?.message || 'Failed to update choice', variant: 'destructive' });
-          }
-        }}
-        onDeleteChoice={async (choice) => {
-          if (!window.confirm('Delete this choice?')) return;
-          try {
-            await deleteAdminQuestionChoice(choice.choice_id);
-            await loadChoices(choice.question_id);
-            toast({ description: 'Choice deleted.' });
-          } catch (err) {
-            toast({ description: err?.message || 'Failed to delete choice', variant: 'destructive' });
+            toast.error(err?.message || 'Failed to delete question');
           }
         }}
       />

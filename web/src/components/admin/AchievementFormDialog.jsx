@@ -84,16 +84,18 @@ export function AchievementFormDialog({ open, onOpenChange, record, onSave, prim
           )}
           <div className="grid gap-4 grid-cols-2">
             <Card className="md:col-span-2">
-              <CardHeader className="font-bold">Conditions</CardHeader>
+              <CardHeader className="font-bold">Conditions <span className="text-xs text-destructive">(require at least one)</span></CardHeader>
               <CardContent className="flex flex-row gap-4">
                 <div className="flex-1 space-y-1">
                   <Label>Target XP</Label>
                   <Input type="number" min="0" value={form.target_xp_value ?? ''} onChange={handleNumberChange('target_xp_value')} placeholder="e.g. 500" />
                 </div>
+                <span className="text-xs align-middle self-center">or</span>
                 <div className="flex-1 space-y-1">
                   <Label>Target Streak</Label>
                   <Input type="number" min="0" value={form.target_streak_value ?? ''} onChange={handleNumberChange('target_streak_value')} placeholder="e.g. 7" />
                 </div>
+                <span className="text-xs align-middle self-center">or</span>
                 <div className="flex-1 space-y-1 md:col-span-2">
                   <Label>Target Completed Test Id</Label>
                   <Input value={form.target_completed_test_id ?? ''} onChange={(e) => setField('target_completed_test_id', e.target.value)} placeholder="test_101" />
@@ -125,7 +127,7 @@ export function AchievementFormDialog({ open, onOpenChange, record, onSave, prim
                 {showBadgeFields && (
                   <>
                     <div className="flex-1 space-y-1">
-                      <Label>Badge Key</Label>
+                      <Label>Badge Icon Url</Label>
                       <Input value={form.reward_content ?? ''} onChange={(e) => setField('reward_content', e.target.value)} placeholder="early_bird" />
                     </div>
                     <div className="flex-2 space-y-1 md:col-span-2">
