@@ -12,24 +12,26 @@ urlpatterns = [
     path("api/token/refresh/", TokenRefreshView.as_view(), name="refresh"),
     path("api-auth/", include("rest_framework.urls")),
 
-    path("api/", include("users.urls")),
+    # Users (admin + client)
+    path("api/admin/", include("users.urls.admin")),
+    path("api/client/", include("users.urls.client")),
     # Game info (admin + client)
-    path("api/", include("gameinfo.urls.admin")),
+    path("api/admin/", include("gameinfo.urls.admin")),
     path("api/client/", include("gameinfo.urls.client")),
     # Daily streaks (admin + client)
-    path("api/", include("streaks.urls.admin")),
+    path("api/admin/", include("streaks.urls.admin")),
     path("api/client/", include("streaks.urls.client")),
     # Achievements (admin + client)
-    path("api/", include("achievements.urls.admin")),
+    path("api/admin/", include("achievements.urls.admin")),
     path("api/client/", include("achievements.urls.client")),
     # Courses (admin + client)
-    path("api/", include("courses.urls.admin")),
+    path("api/admin/", include("courses.urls.admin")),
     path("api/client/", include("courses.urls.client")),
     # Feedback (admin + client)
-    path("api/", include("feedback.urls.admin")),
+    path("api/admin/", include("feedback.urls.admin")),
     path("api/client/", include("feedback.urls.client")),
     # Premium subscriptions (admin + client)
-    path("api/", include("premium.urls.admin")),
+    path("api/admin/", include("premium.urls.admin")),
     path("api/client/", include("premium.urls.client")),
     # path("api/notes/", include("notes.urls")),
     # path("api/courses/", include("courses.urls")),

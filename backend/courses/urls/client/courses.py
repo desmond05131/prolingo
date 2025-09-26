@@ -3,7 +3,7 @@ from courses.views.client.course import ClientListCoursesView, ClientRetrieveCou
 
 urlpatterns = [
     path("courses/", ClientListCoursesView.as_view(), name="client_course_list"),
-    path("courses/<int:course_id>/", ClientRetrieveCourseView.as_view(), name="client_course_detail"),
+    path("courses/<int:course_id>", ClientRetrieveCourseView.as_view(), name="client_course_detail"),
 ]
 
 __all__ = ["urlpatterns"]

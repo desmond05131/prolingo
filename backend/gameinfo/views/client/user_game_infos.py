@@ -7,4 +7,7 @@ class MyGameInfoView(generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
-        return UserGameInfos.objects.select_related("user").get(user=self.request.user)
+        gameinfo, _ = UserGameInfos.objects.select_related("user").get_or_create(user=self.request.user)
+        # Apply passive regeneration before returning
+        gameinfo.apply_passive_energy_regen()
+        return gameinfo
