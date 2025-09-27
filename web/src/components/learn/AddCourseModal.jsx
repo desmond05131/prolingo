@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { addCourse, setSelectedCourse, removeCourse } from "@/stores/stores";
 import {
   Dialog,
   DialogContent,
@@ -9,6 +8,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { listCourses, listUserCourses, joinUserCourse, unjoinUserCourse } from "@/client-api";
+import LoadingIndicator from "@/components/LoadingIndicator";
 
 export function AddCourseModal({ open, onClose }) {
   const [loading, setLoading] = useState(false);
@@ -21,7 +21,7 @@ export function AddCourseModal({ open, onClose }) {
   useEffect(() => {
     if (!open) return;
     // reset session flags each time modal opens
-    setDidUnjoin(false);
+  setDidUnjoin(false);
     const abort = new AbortController();
     const load = async () => {
       setLoading(true);
@@ -41,9 +41,8 @@ export function AddCourseModal({ open, onClose }) {
             map[uc.course_id] = true;
         }
         setJoinedMap(map);
-      } catch (e) {
-        console.error(e);
-        setError("Failed to load courses");
+      } catch {
+        // omit error handling: keep items empty and show loading state only
       } finally {
         setLoading(false);
       }
@@ -51,12 +50,6 @@ export function AddCourseModal({ open, onClose }) {
     load();
     return () => abort.abort();
   }, [open]);
-
-  const addAndSelect = (course) => {
-    addCourse(course);
-    setSelectedCourse(course);
-    // onClose?.();
-  };
 
   const isJoined = useMemo(() => {
     return (courseId) => Boolean(joinedMap[courseId]);
@@ -67,11 +60,8 @@ export function AddCourseModal({ open, onClose }) {
       setActionId(course.course_id);
       await joinUserCourse(course.course_id);
       setJoinedMap((prev) => ({ ...prev, [course.course_id]: true }));
-      // keep local store in sync and select
-      addAndSelect(course);
-    } catch (e) {
-      console.error(e);
-      setError("Failed to join course");
+    } catch {
+      // omit error handling
     } finally {
       setActionId(null);
     }
@@ -88,11 +78,9 @@ export function AddCourseModal({ open, onClose }) {
         delete copy[course.course_id];
         return copy;
       });
-      removeCourse(course.course_id);
       setDidUnjoin(true);
-    } catch (e) {
-      console.error(e);
-      setError("Failed to unjoin course");
+    } catch {
+      // omit error handling
     } finally {
       setActionId(null);
     }
@@ -106,8 +94,13 @@ export function AddCourseModal({ open, onClose }) {
           <DialogDescription className="sr-only">Select a course to join from the list</DialogDescription>
         </DialogHeader>
         <div className="max-h-[60vh] overflow-y-auto px-5 py-4 space-y-3">
-          {loading && <div className="text-xs text-muted-foreground">Loading courses...</div>}
-          {error && <div className="text-xs text-red-600">{error}</div>}
+          {loading && (
+            <div className="text-xs text-muted-foreground flex items-center gap-2">
+              <LoadingIndicator />
+              <span>Loading courses...</span>
+            </div>
+          )}
+          {/* omit error UI per requirement */}
           {!loading && !error && items.length === 0 && (
             <div className="text-xs text-muted-foreground">No courses available.</div>
           )}

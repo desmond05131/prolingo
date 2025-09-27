@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useBoundStore, setCourses, setSelectedCourse } from "@/stores/stores";
+import {
+  useBoundStore,
+  setSelectedCourse,
+  refreshUserCourses,
+  loadLearnUnitsForCourse,
+} from "@/stores/stores";
+import LoadingIndicator from "@/components/LoadingIndicator";
 import { AddCourseModal } from "@/components/learn/AddCourseModal";
-import { listUserCourses } from "@/client-api";
-import { MOCK_USER_COURSES } from "@/constants";
 
 /*
   CourseSelect
@@ -12,45 +16,40 @@ import { MOCK_USER_COURSES } from "@/constants";
   - Keyboard accessible (Enter/Space to open, Arrow keys to navigate, Esc to close)
 */
 
-// Temporary local sample courses (fallback)
-const DEFAULT_COURSES = MOCK_USER_COURSES;
-
 export function CourseSelect() {
   const courses = useBoundStore((s) => s.courses);
   const selectedCourse = useBoundStore((s) => s.selectedCourse);
+  const loading = useBoundStore((s) => s.coursesLoading);
+  const coursesLoaded = useBoundStore((s) => s.coursesLoaded);
   const [open, setOpen] = useState(false);
   const buttonRef = useRef(null);
   const listRef = useRef(null);
-  const [highlightIndex, setHighlightIndex] = useState(-1);
+  // keyboard highlight index can be added later if needed
   const [openModal, setOpenModal] = useState(false);
 
   // Initialize courses once if empty
+  // Initialize courses once; do not loop when list is empty
   useEffect(() => {
-    if (!courses || courses.length === 0) {
-      listUserCourses()
-        .then((data) => {
-          if (Array.isArray(data) && data.length > 0) {
-            setCourses(data);
-          } else {
-            setCourses(DEFAULT_COURSES);
-          }
-        })
-        .catch((err) => {
-          console.error("Failed to load courses", err);
-          setCourses(DEFAULT_COURSES);
-        });
-    }
-  }, [courses]);
+    if (coursesLoaded) return; // already attempted
+    const abort = new AbortController();
+    refreshUserCourses(abort.signal).then(() => {
+      const first = useBoundStore.getState().selectedCourse;
+      const cid = first?.course_id ?? first?.id ?? null;
+      loadLearnUnitsForCourse(cid, abort.signal);
+    });
+    return () => abort.abort();
+  }, [coursesLoaded]);
 
   const toggle = () => setOpen((o) => !o);
   const close = () => {
     setOpen(false);
-    setHighlightIndex(-1);
   };
 
-  const onSelect = useCallback((course, idx) => {
+  const onSelect = useCallback((course) => {
     setSelectedCourse(course);
-    setHighlightIndex(idx ?? -1);
+    // Trigger learn reload for newly selected course
+    const cid = course.course_id ?? course.id;
+    loadLearnUnitsForCourse(cid);
     close();
   }, []);
 
@@ -71,7 +70,7 @@ export function CourseSelect() {
     return () => window.removeEventListener("mousedown", handleClick);
   }, [open]);
 
-  const label = selectedCourse ? selectedCourse.course_title : "Select a course";
+  const label = selectedCourse ? (selectedCourse.course_title || selectedCourse.title) : "Select a course";
 
   const handleOpenModal = () => {
     // Close dropdown before opening modal for clarity
@@ -79,25 +78,14 @@ export function CourseSelect() {
     setOpenModal(true);
   };
 
-  const handleModalClose = async (payload) => {
+  const handleModalClose = async () => {
     setOpenModal(false);
-    // If unjoin happened, force page reload as requested
-    if (payload?.unjoined) {
-      window.location.reload();
-      return;
-    }
-    // Otherwise, refetch dropdown values
-    try {
-      const data = await listUserCourses();
-      if (Array.isArray(data) && data.length > 0) {
-        setCourses(data);
-      } else {
-        setCourses(DEFAULT_COURSES);
-      }
-    } catch (err) {
-      console.error("Failed to refresh courses after modal close", err);
-      setCourses(DEFAULT_COURSES);
-    }
+    // Always refetch courses after modal closes; requirement 5 will then trigger learn reload via first item
+    const abort = new AbortController();
+    await refreshUserCourses(abort.signal);
+    const first = useBoundStore.getState().selectedCourse;
+    const cid = first?.course_id ?? first?.id ?? null;
+    await loadLearnUnitsForCourse(cid, abort.signal);
   };
 
   return (
@@ -111,6 +99,11 @@ export function CourseSelect() {
         aria-expanded={open}
       >
         <span className="font-medium text-sm">{label}</span>
+        {loading && (
+          <span className="text-indigo-600">
+            <LoadingIndicator />
+          </span>
+        )}
         <svg
           className={`h-4 w-4 transition-transform ${open ? "rotate-180" : "rotate-0"}`}
           xmlns="http://www.w3.org/2000/svg"
@@ -133,10 +126,16 @@ export function CourseSelect() {
             tabIndex={-1}
             className="max-h-[280px] overflow-y-auto pr-1"
           >
-            {courses.length === 0 && (
+            {loading && (
+              <li className="px-3 py-2 text-sm text-gray-500 flex items-center gap-2">
+                <LoadingIndicator />
+                <span>Loading courses...</span>
+              </li>
+            )}
+            {!loading && courses.length === 0 && (
               <li className="px-3 py-2 text-sm text-gray-500">No courses available, join a course!</li>
             )}
-            {courses.map((c, idx) => {
+            {!loading && courses.map((c) => {
               const isSelected = selectedCourse?.id === c.id;
               return (
                 <li
@@ -147,12 +146,12 @@ export function CourseSelect() {
                 >
                   <button
                     type="button"
-                    onClick={() => onSelect(c, idx)}
+                    onClick={() => onSelect(c)}
                     className="flex-1 text-left outline-none"
                   >
                     <div className="flex flex-col">
-                      <span>{c.course_title}</span>
-                      <span className="text-xs text-gray-500 leading-snug">{c.course_description}</span>
+                      <span>{c.course_title || c.title}</span>
+                      <span className="text-xs text-gray-500 leading-snug">{c.course_description || c.description}</span>
                     </div>
                   </button>
                 </li>

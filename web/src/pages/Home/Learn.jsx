@@ -5,98 +5,29 @@ import { UnitSection } from "@/components/learn/UnitSection";
 // import { ReactComponent as PracticeExerciseSvg } from "../../assets/icons/practice-exercise.svg";
 // import { ReactComponent as UpArrowSvg } from "../../assets/icons/up-arrow.svg";
 import { Link } from "react-router-dom";
-import { setUnits, setCompletedTestIds, useBoundStore } from "@/stores/stores";
+import { useBoundStore, refreshUserCourses, loadLearnUnitsForCourse } from "@/stores/stores";
 import { useEffect } from "react";
-// import { units as unitsConst } from "@/constants";
-import { fetchClientTestsTree, fetchClientUserTests } from "@/client-api";
+import LoadingIndicator from "@/components/LoadingIndicator";
 import { CourseSelect } from "@/components/learn/CourseSelect";
 
 function LearnHome() {
   const units = useBoundStore((state) => state.units);
+  const coursesLoading = useBoundStore((s) => s.coursesLoading);
+  const learnLoading = useBoundStore((s) => s.learnLoading);
+  const coursesLoaded = useBoundStore((s) => s.coursesLoaded);
 
   useEffect(() => {
-    let abort = new AbortController();
-
-    async function load() {
-      try {
-        const [tree, userTests] = await Promise.all([
-          fetchClientTestsTree(abort.signal),
-          fetchClientUserTests(abort.signal),
-        ]);
-
-        // userTests expected to contain test references; collect completed test_ids
-        // Assuming each record has either test or test_id; and a status/score to qualify completion
-        const completedIds = (userTests || [])
-          .filter((ut) => {
-            // Infer completion: passing score or status === 'complete' if available
-            if (typeof ut.passed !== 'undefined') return !!ut.passed;
-            if (typeof ut.status === 'string') return ut.status.toLowerCase() === 'complete';
-            if (typeof ut.score !== 'undefined' && typeof ut.passing_score !== 'undefined') {
-              return Number(ut.score) >= Number(ut.passing_score);
-            }
-            // Fallback: count all attempts as completed steps
-            return true;
-          })
-          .map((ut) => ut.test_id ?? ut.test?.test_id)
-          .filter(Boolean);
-
-        setCompletedTestIds(completedIds);
-
-        // Build units from tree data grouped by chapter or course
-        // Schema item example:
-        // { course: {...}, chapter: {...}, test: {...} }
-        const byChapter = new Map();
-        (tree || [])
-          .filter(x => x.test != null) // ignore empty test items
-          .forEach((row) => {
-          const chapId = row.chapter?.chapter_id;
-          if (!chapId) return;
-          if (!byChapter.has(chapId)) {
-            byChapter.set(chapId, {
-              unitNumber: row.chapter.order_index ?? byChapter.size + 1,
-              description: row.chapter.title || "",
-              // keep colors minimal; could map per course later
-              backgroundColor: "bg-[#CC8427]",
-              textColor: "text-[#CC8427]",
-              borderColor: "border-[#FFA531]",
-              tiles: [],
-              order_index: row.chapter.order_index,
-            });
-          }
-          const unit = byChapter.get(chapId);
-          if (row.test) {
-            unit.tiles.push({
-              type: "book",
-              description: row.test.title || `Lesson ${row.test.test_id}`,
-              test_id: row.test.test_id,
-              order_index: row.test.order_index,
-            });
-          }
-        });
-
-        // Add a trophy tile at end of each unit for review UI consistency
-        // byChapter.forEach((unit) => {
-        //   if (unit.tiles.length > 0) {
-        //     unit.tiles.push({ type: "trophy", description: `${unit.description} review` });
-        //   }
-        // });
-
-        const unitsFromApi = Array.from(byChapter.values()).sort(
-          (a, b) => (a.unitNumber || 0) - (b.unitNumber || 0)
-        );
-        setUnits(unitsFromApi);
-
-        console.log('learning module loaded', unitsFromApi, completedIds)
-      } catch (e) {
-        // On failure, keep current units (could fallback to constants if desired)
-        console.error("Failed to load learn tree:", e);
-      }
-      return () => abort.abort();
-    }
-
-    load();
+    // Requirement 4: On page load, first load CourseSelect (user courses), then learn data for first item
+    // Guard with coursesLoaded to avoid repeated fetching when the list is empty
+    if (coursesLoaded) return;
+    const abort = new AbortController();
+    refreshUserCourses(abort.signal).then(() => {
+      const first = useBoundStore.getState().selectedCourse;
+      const cid = first?.course_id ?? first?.id ?? null;
+      return loadLearnUnitsForCourse(cid, abort.signal);
+    });
     return () => abort.abort();
-  }, []);
+  }, [coursesLoaded]);
 
   return (
     <div className="flex flex-row h-screen overflow-hidden">
@@ -113,7 +44,23 @@ function LearnHome() {
             </div>
           </div>
           <div className="max-w-2xl mx-auto px-6 py-8 flex flex-col gap-4">
-            {units.map((unit) => (
+            {(coursesLoading || learnLoading) && (
+              <div className="min-h-[50vh] flex items-center justify-center">
+                <div className="flex flex-col items-center gap-3 text-gray-500">
+                  <LoadingIndicator size="16" />
+                  <span className="text-sm">Loading learning content...</span>
+                </div>
+              </div>
+            )}
+            {!coursesLoading && !learnLoading && units.length === 0 && (
+              <div className="min-h-[40vh] flex items-center justify-center">
+                <div className="text-center space-y-2">
+                  <p className="text-base font-medium text-gray-700">No content available for this course yet</p>
+                  <p className="text-sm text-gray-500">Try another course first while this one gets ready.</p>
+                </div>
+              </div>
+            )}
+            {!coursesLoading && !learnLoading && units.map((unit) => (
               <UnitSection unit={unit} key={unit.unitNumber} />
             ))}
             <div className="sticky bottom-28 left-0 right-0 flex items-end justify-between">

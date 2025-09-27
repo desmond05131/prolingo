@@ -25,7 +25,7 @@ function buildMonthMatrix(date = new Date()) {
 
 export const StreakPopover = ({ checkins = new Set(), onUseStreakSaver, streakSaversLeft = 0 }) => {
   const today = new Date();
-  const todayISO = today.toISOString().slice(0, 10);
+  // Use local date components to avoid timezone issues when determining "today"
   const monthMatrix = useMemo(() => buildMonthMatrix(new Date()), []);
   const monthLabel = new Date().toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
 
@@ -81,7 +81,10 @@ export const StreakPopover = ({ checkins = new Set(), onUseStreakSaver, streakSa
               const iso = day.toISOString().slice(0,10);
               const inMonth = day.getMonth() === new Date().getMonth();
               const checked = checkins.has(iso);
-              const isToday = iso === todayISO;
+              const isToday =
+                day.getFullYear() === today.getFullYear() &&
+                day.getMonth() === today.getMonth() &&
+                day.getDate() === today.getDate();
               return (
                 <div
                   key={iso}
