@@ -22,12 +22,12 @@ export async function registerUser(payload) {
 
 // --- Profile ---
 export async function getMyProfile(signal) {
-  const { data } = await api.get('/client/users/account/manage/', { signal });
+  const { data } = await api.get('/client/me/', { signal });
   return data;
 }
 
 export async function updateMyProfile(payload) {
-  const { data } = await api.patch('/client/users/account/manage/', payload);
+  const { data } = await api.patch('/client/me/', payload);
   return data;
 }
 

@@ -1,9 +1,9 @@
 import React, { useRef, useState } from 'react';
-import { MOCK_PROFILE } from '../../constants';
+import ProfileAvatar from './ProfileAvatar';
 
 // Row 3: Avatar preview + upload/reupload
-export function AvatarUpload({ profile = MOCK_PROFILE, onChange }) {
-  const [preview, setPreview] = useState(profile.avatarUrl);
+export function AvatarUpload({ username, avatarUrl = '', onChange }) {
+  const [preview, setPreview] = useState(avatarUrl);
   const inputRef = useRef(null);
 
   const handleFile = (file) => {
@@ -18,9 +18,15 @@ export function AvatarUpload({ profile = MOCK_PROFILE, onChange }) {
 
   return (
     <div className="w-full p-6 rounded-lg bg-secondary text-secondary-foreground shadow border border-secondary-200 flex items-center gap-6">
-      <div className="h-28 w-28 rounded-full overflow-hidden bg-gray-100 ring-2 ring-gray-200 flex items-center justify-center">
-        {/* avatar preview */}
-        <img src={preview} alt="avatar" className="h-full w-full object-cover" />
+      <div className="ring-2 ring-gray-200 rounded-full flex-shrink-0" style={{ width: '112px', height: '112px' }}>
+        
+        <ProfileAvatar
+          src={preview}
+          username={username || ''}
+          size={112}
+          rounded
+          alt="avatar preview"
+        />
       </div>
       <div className="flex flex-col gap-3">
         <span className="text-sm">Upload a square image for best results (PNG/JPG).</span>

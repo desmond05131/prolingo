@@ -1,47 +1,144 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Sidebar } from "../../components/Sidebar/Sidebar";
 import { ProfileBanner } from '../../components/Profile/ProfileBanner';
 import { ProfileDetailsForm } from '../../components/Profile/ProfileDetailsForm';
 import { AvatarUpload } from '../../components/Profile/AvatarUpload';
 import { PasswordChangeForm } from '../../components/Profile/PasswordChangeForm';
-import { SubscriptionSection } from '../../components/Profile/SubscriptionSection';
-import { MOCK_PROFILE } from '../../constants';
+import { listAchievements, getMyProfile, updateMyProfile } from '../../client-api';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import { useToast } from '../../hooks/use-toast';
 import "../../styles/Home.css";
 
 function ProfileHome() {
-  // Local draft state collecting edits
+  const { toast } = useToast();
+  // Local draft state aligning with backend schema fields
+  // username, email, profile_icon
   const [draft, setDraft] = useState({
-    name: MOCK_PROFILE.name,
-    email: MOCK_PROFILE.email,
-    avatar: MOCK_PROFILE.avatarUrl,
+    username: '',
+    email: '',
+    profile_icon: '',
     currentPassword: '',
     newPassword: '',
   });
+  const [profile, setProfile] = useState(null);
+  const [achievements, setAchievements] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState(null);
+
+  // Fetch current profile on mount
+  useEffect(() => {
+    let active = true;
+    const ctrl = new AbortController();
+    (async () => {
+      setLoading(true);
+      try {
+        // Fetch profile and achievements in parallel
+        const [data, ach] = await Promise.all([
+          getMyProfile(ctrl.signal),
+          listAchievements(ctrl.signal).catch(() => []),
+        ]);
+        if (!active) return;
+        setProfile(data);
+        setAchievements(Array.isArray(ach) ? ach : (ach?.results || []));
+        setDraft((d) => ({
+          ...d,
+          username: data?.username || '',
+          email: data?.email || '',
+          profile_icon: data?.profile_icon || '',
+        }));
+      } catch {
+        if (!active) return;
+        setMessage({ type: 'error', text: 'Failed to load profile.' });
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+      ctrl.abort();
+    };
+  }, []);
+
+  const bannerBadges = useMemo(() => {
+    // Map achievements to banner badge model when reward_type === 'badge'
+    const baseUrl = (import.meta.env?.VITE_API_URL || '').replace(/\/$/, '');
+    return (achievements || [])
+      .filter((a) => a?.reward_type === 'badge')
+      .map((a) => ({
+        id: a.achievement_id ?? `${a.reward_type}-${a.reward_content}`,
+        imageUrl: a.reward_content
+          ? (a.reward_content.startsWith('http') ? a.reward_content : `${baseUrl}${a.reward_content.startsWith('/') ? '' : '/'}${a.reward_content}`)
+          : '',
+        label: a.reward_content_description || 'Badge',
+        color: '#89b4fa',
+      }));
+  }, [achievements]);
 
   const handleSave = async () => {
     setSaving(true);
     setMessage(null);
     try {
-      // TODO: integrate real API call
-      await new Promise(r => setTimeout(r, 800));
-      setMessage({ type: 'success', text: 'Profile saved.' });
-    } catch {
-      setMessage({ type: 'error', text: 'Failed to save profile.' });
+      const payload = {};
+      if (draft.username && draft.username !== profile?.username) payload.username = draft.username;
+      if (draft.email && draft.email !== profile?.email) payload.email = draft.email;
+      // Avatar currently expects string URL or data URL; backend field is profile_icon
+      if (draft.profile_icon && draft.profile_icon !== profile?.profile_icon) payload.profile_icon = draft.profile_icon;
+
+      // Inline password change via PATCH if both provided
+      if (draft.currentPassword && draft.newPassword) {
+        payload.current_password = draft.currentPassword;
+        payload.password = draft.newPassword;
+      }
+
+      if (Object.keys(payload).length > 0) {
+        try {
+          await updateMyProfile(payload);
+        } catch (err) {
+          // Fallback: some backends may expect `password` instead of `new_password`
+          const hadNewPassword = Object.prototype.hasOwnProperty.call(payload, 'new_password');
+          if (!hadNewPassword) throw err;
+
+          const altPayload = { ...payload };
+          delete altPayload.new_password;
+          altPayload.password = draft.newPassword;
+          await updateMyProfile(altPayload);
+        }
+      }
+
+      // refresh profile
+      const fresh = await getMyProfile();
+      setProfile(fresh);
+      setDraft((d) => ({
+        ...d,
+        username: fresh?.username || d.username,
+        email: fresh?.email || d.email,
+        profile_icon: fresh?.profile_icon || d.profile_icon,
+        currentPassword: '',
+        newPassword: '',
+      }));
+  setMessage({ type: 'success', text: 'Profile saved.' });
+  toast.success?.('Profile saved.') || toast('Profile saved.');
+    } catch (err) {
+      const msg = err?.message || 'Failed to save profile.';
+      setMessage({ type: 'error', text: msg });
+      // Show toast on submit error
+      toast.error?.(msg) || toast(msg);
     } finally {
       setSaving(false);
     }
   };
 
   const handleCancel = () => {
-    setDraft({
-      name: MOCK_PROFILE.name,
-      email: MOCK_PROFILE.email,
-      avatar: MOCK_PROFILE.avatarUrl,
-      currentPassword: '',
-      newPassword: '',
-    });
+    if (profile) {
+      setDraft({
+        username: profile?.username || '',
+        email: profile?.email || '',
+        profile_icon: profile?.profile_icon || '',
+        currentPassword: '',
+        newPassword: '',
+      });
+    }
     setMessage({ type: 'info', text: 'Changes discarded.' });
   };
 
@@ -50,22 +147,25 @@ function ProfileHome() {
       <Sidebar />
       <main className="flex-1 max-h-screen px-8 py-8 overflow-y-auto">
         <div className="max-w-4xl mx-auto flex flex-col gap-8">
-          <ProfileBanner
-            profile={{
-              ...MOCK_PROFILE,
-              name: draft.name,
-              avatarUrl: draft.avatar,
-            }}
-          />
+          {loading ? (
+            <div className="flex items-center gap-3 text-white/80"><LoadingIndicator /> Loading profile…</div>
+          ) : (
+            <ProfileBanner
+              profile={{
+                username: draft.username,
+                profile_icon: draft.profile_icon,
+              }}
+              badges={bannerBadges}
+            />
+          )}
           <ProfileDetailsForm
-            profile={{ name: draft.name, email: draft.email }}
-            onChange={(v) => setDraft((d) => ({ ...d, ...v }))}
+            profile={{ name: draft.username, email: draft.email }}
+            onChange={(v) => setDraft((d) => ({ ...d, username: v.name, email: v.email }))}
           />
           <AvatarUpload
-            profile={{ avatarUrl: draft.avatar }}
-            onChange={(file, dataUrl) =>
-              setDraft((d) => ({ ...d, avatar: dataUrl }))
-            }
+            avatarUrl={draft.profile_icon}
+            username={draft.username}
+            onChange={(file, dataUrl) => setDraft((d) => ({ ...d, profile_icon: dataUrl || d.profile_icon }))}
           />
           <PasswordChangeForm
             onChange={(v) => setDraft((d) => ({ ...d, ...v }))}

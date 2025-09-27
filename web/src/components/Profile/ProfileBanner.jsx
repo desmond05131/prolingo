@@ -1,35 +1,30 @@
 import React from 'react';
-import { MOCK_PROFILE } from '../../constants';
+import ProfileAvatar from './ProfileAvatar';
 
 // Row 1: Banner with avatar, name, badges aligned right
-export function ProfileBanner({ profile = MOCK_PROFILE }) {
-  const displayBadges = profile.badges.slice(0, 3);
+export function ProfileBanner({ profile, badges = [] }) {
   return (
     <div className="w-full flex items-center justify-between gap-8 p-6 rounded-lg bg-secondary border border-border/50 hover:shadow-md transition-shadow">
       {/* Left: Avatar + Name */}
       <div className="flex items-center gap-4 min-w-0">
-        <div className="h-24 w-24 shrink-0 rounded-full bg-gray-200 overflow-hidden ring-4 ring-gray-100 flex items-center justify-center">
-          <img
-            src={profile.avatarUrl}
-            alt={profile.name}
-            className="h-full w-full object-cover"
-            onError={(e) => {
-              e.currentTarget.src = '/public/assets/Logo.png';
-            }}
-          />
-        </div>
+        <ProfileAvatar
+          src={profile?.profile_icon}
+          username={profile?.username}
+          size={96}
+          className="shrink-0 ring-4 ring-gray-100"
+        />
         <div className="flex flex-col min-w-0">
-          <span className="text-2xl font-semibold text-white truncate">{profile.name}</span>
+          <span className="text-2xl font-semibold text-white truncate">{profile.username}</span>
         </div>
       </div>
 
       {/* Right: Badges (circular image + label) */}
       <div className="flex items-end gap-6">
-        {displayBadges.map((b) => (
+        {badges.map((b) => (
           <div key={b.id} className="flex flex-col items-center w-20 text-center">
             <div
               className="h-16 w-16 rounded-full border-2 flex items-center justify-center overflow-hidden shadow-sm"
-              style={{ borderColor: b.color, backgroundColor: b.color + '22' }}
+              style={{ borderColor: b.color || '#cccccc', backgroundColor: (b.color || '#cccccc') + '22' }}
             >
               {b.imageUrl ? (
                 <img

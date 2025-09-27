@@ -40,6 +40,7 @@ import AdminUserTests from "./pages/Admin/AdminUserTests"
 import AdminDailyStreaks from "./pages/Admin/AdminDailyStreaks"
 import AdminUserClaimedAchievements from "./pages/Admin/AdminUserClaimedAchievements"
 import AdminCourses from "./pages/Admin/AdminCourses"
+import ForgotPassword from "./pages/ForgotPassword"
 
 function Logout() {
   localStorage.clear()
@@ -67,7 +68,8 @@ function App() {
 
         <Route path="/login" element={<Login />} />
         <Route path="/logout" element={<Logout />} />
-        <Route path="/register" element={<RegisterAndLogout />} />
+  <Route path="/register" element={<RegisterAndLogout />} />
+  <Route path="/forgot-password" element={<ForgotPassword />} />
 
         <Route path="/leaderboards" element={<ProtectedRoute><LeaderboardHome /></ProtectedRoute>} />
         <Route path="/achievements" element={<ProtectedRoute><AchievementsHome /></ProtectedRoute>} />

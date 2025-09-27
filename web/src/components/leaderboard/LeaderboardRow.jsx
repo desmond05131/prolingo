@@ -1,4 +1,5 @@
 import React from 'react';
+import ProfileAvatar from '../Profile/ProfileAvatar';
 
 /**
  * rankStyle is derived from rank unless explicitly provided
@@ -20,15 +21,15 @@ export function LeaderboardRow({ rank, name, level, avatarUrl, rankStyle }) {
   };
 
   return (
-    <div className="flex items-center gap-4 py-3">
-      <div className={`w-10 text-right pr-2 font-bold tabular-nums ${rankColorMap[style]}`}>#{rank}</div>
-      <div className="w-12 h-12 rounded-full bg-slate-700 overflow-hidden flex items-center justify-center text-slate-400 flex-shrink-0 border border-slate-600">
-        {avatarUrl ? (
-          <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
-        ) : (
-          <span className="text-xs">NO AVATAR</span>
-        )}
-      </div>
+    <div className="flex items-center gap-4 py-3 w-full">
+      <div className={`w-10 text-right text-lg pr-2 font-bold tabular-nums ${rankColorMap[style]}`}>{rank}</div>
+      <ProfileAvatar
+        src={avatarUrl}
+        username={name}
+        size={52}
+        className="flex-shrink-0 border border-slate-600 bg-slate-700"
+        rounded
+      />
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-white truncate">{name}</p>
       </div>

@@ -181,13 +181,17 @@ function AchievementsHome() {
         <div className="px-4 md:px-6 pb-8 flex-1 min-h-0">
           <div className="achievements-scroll h-full flex flex-col gap-4">
             {loading && (
-              <div className="flex items-center gap-3 text-white/80">
-                <LoadingIndicator />
-                <span>Loading achievements…</span>
+              <div className="min-h-[40vh] flex items-center justify-center">
+                <div className="flex flex-col items-center gap-3 text-gray-500">
+                  <LoadingIndicator size="16" />
+                  <span className="text-sm">Loading achievements...</span>
+                </div>
               </div>
             )}
             {!loading && !error && rows.length === 0 && (
-              <div className="text-white/70 text-sm">No achievements found.</div>
+              <div className="min-h-[30vh] flex items-center justify-center text-white/70 text-sm">
+                No achievements found.
+              </div>
             )}
             {!loading && !error && rows.map((a) => (
               <AchievementRow

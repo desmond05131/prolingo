@@ -1,6 +1,7 @@
 import EditForm from "../components/Forms/EditForm";
 
 function UpdateProfile() {
-    return <EditForm route="/api/users/account/manage/" />;}
+    return <EditForm route="/client/me/" />;
+}
 
 export default UpdateProfile;

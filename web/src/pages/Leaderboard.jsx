@@ -1,30 +1,15 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { LeaderboardHeader } from '@/components/leaderboard/LeaderboardHeader';
 import { LeaderboardTabs } from '@/components/leaderboard/LeaderboardTabs';
 import { LeaderboardList } from '@/components/leaderboard/LeaderboardList';
 import { Sidebar } from '@/components/Sidebar/Sidebar';
 import Stats from '@/components/Stats/Stats';
+import LoadingIndicator from '@/components/LoadingIndicator';
+import { getLeaderboardTop50 } from '@/client-api';
+import { MOCK_LEADERBOARD_TOP50 } from '@/constants';
 
-// Sample datasets (replace with API calls later)
-const streakData = [
-	{ id: '1', rank: 1, name: 'Name1', level: 9999 },
-	{ id: '2', rank: 2, name: 'Name2', level: 99 },
-	{ id: '3', rank: 3, name: 'BigOrange', level: 95, avatarUrl: 'https://placekitten.com/120/120' },
-	{ id: '4', rank: 4, name: 'Name4', level: 94 },
-	{ id: '5', rank: 5, name: 'Name5', level: 94 },
-	// duplicate ranks example
-	{ id: '6a', rank: 6, name: 'Name6A', level: 94 },
-	{ id: '6b', rank: 6, name: 'Name6B', level: 94 },
-	{ id: '6c', rank: 6, name: 'Name6C', level: 94 },
-];
-
-const levelData = [
-	{ id: 'l1', rank: 1, name: 'LevelKing', level: 120 },
-	{ id: 'l2', rank: 2, name: 'ConsistentPro', level: 118 },
-	{ id: 'l3', rank: 3, name: 'OrangeCat', level: 110, avatarUrl: 'https://placekitten.com/121/121' },
-	{ id: 'l4', rank: 4, name: 'Polyglot', level: 105 },
-	{ id: 'l5', rank: 5, name: 'NightOwl', level: 99 },
-];
+// Helper to normalize API or mock response
+const asArray = (x) => (Array.isArray(x) ? x : Array.isArray(x?.results) ? x.results : []);
 
 const tabs = [
 	{ id: 'streak', label: 'Highest Streak' },
@@ -33,10 +18,48 @@ const tabs = [
 
 export default function LeaderboardPage() {
 	const [activeTab, setActiveTab] = useState('streak');
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState(null);
+	const [top, setTop] = useState([]); // normalized array from API/mock
+
+	useEffect(() => {
+		const abort = new AbortController();
+		async function load() {
+			try {
+				setLoading(true);
+				setError(null);
+				const data = await getLeaderboardTop50(abort.signal);
+				const list = asArray(data);
+				// Fallback if API returns empty
+				const fallback = list && list.length ? list : asArray(MOCK_LEADERBOARD_TOP50);
+				setTop(fallback);
+			} catch (err) {
+				console.error('Failed to load leaderboard', err);
+				setError(err);
+				// Use mock data as fallback on error
+				setTop(asArray(MOCK_LEADERBOARD_TOP50));
+			} finally {
+				setLoading(false);
+			}
+		}
+		load();
+		return () => abort.abort();
+	}, []);
 
 	const items = useMemo(() => {
-		return activeTab === 'streak' ? streakData : levelData;
-	}, [activeTab]);
+		// Map API/mock shape -> component shape
+		const mapped = asArray(top).map((it, idx) => ({
+			id: String(it.user_id ?? it.username ?? idx + 1),
+			rank: it.rank ?? idx + 1,
+			name: it.username ?? it.name ?? 'Anonymous',
+			// For now, we use streak value as the numeric metric shown (displayed as level badge)
+			level: Number(it.streak_value ?? it.level ?? 0),
+			avatarUrl: it.avatar_url ?? it.avatarUrl ?? undefined,
+		}));
+		if (activeTab === 'streak') return mapped;
+		// For "Highest Level" tab, sort descending by the same metric (placeholder until level endpoint exists)
+		return [...mapped].sort((a, b) => (b.level || 0) - (a.level || 0));
+	}, [top, activeTab]);
 
   return (
     <>
@@ -49,7 +72,22 @@ export default function LeaderboardPage() {
             activeTabId={activeTab}
             onTabChange={setActiveTab}
           />
-          <LeaderboardList items={items} />
+					{loading && (
+						<div className="min-h-[50vh] flex items-center justify-center">
+							<div className="flex flex-col items-center gap-3 text-gray-500">
+								<LoadingIndicator size="16" />
+								<span className="text-sm">Loading leaderboard...</span>
+							</div>
+						</div>
+					)}
+					{!loading && !error && items.length === 0 && (
+						<div className="min-h-[30vh] flex items-center justify-center text-gray-400 text-sm">
+							No leaderboard data yet.
+						</div>
+					)}
+					{!loading && items.length > 0 && (
+						<LeaderboardList items={items} />
+					)}
         </div>
       </div>
       <Stats />

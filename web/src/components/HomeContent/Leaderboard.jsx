@@ -3,6 +3,7 @@ import "./Leaderboard.css";
 import LoadingIndicator from "../LoadingIndicator";
 import { getLeaderboardTop50 } from "../../client-api";
 import { MOCK_LEADERBOARD_TOP50 } from "../../constants";
+import { LeaderboardRow } from "../leaderboard/LeaderboardRow";
 
 const LeaderboardEntry = ({ image, index, label, value }) => {
   const color = index === "1"
@@ -64,8 +65,6 @@ const Leaderboard = () => {
       } catch (e) {
         console.error("Failed to load leaderboard:", e);
         setError(e?.message || "Failed to load leaderboard");
-        // Fallback to mock to keep UI usable
-        // setItems(MOCK_LEADERBOARD_TOP50);
       } finally {
         setLoading(false);
       }
@@ -84,23 +83,34 @@ const Leaderboard = () => {
       <div className="line" />
 
       {loading ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 12 }}>
-          <LoadingIndicator />
-          <span style={{ color: '#9BA3AF' }}>Loading leaderboard…</span>
+        <div className="min-h-[40vh] flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3 text-gray-500">
+            <LoadingIndicator size="16" />
+            <span className="text-sm">Loading leaderboard...</span>
+          </div>
         </div>
       ) : (
         <div className="scroll">
           {items.map((it) => (
-            <LeaderboardEntry
+            <LeaderboardRow
               key={it.rank}
-              label={it.username}
-              value={String(it.level)}
-              index={String(it.rank)}
-              image={it.profile_icon}
+              rank={it.rank}
+              name={it.username}
+              level={it.level}
+              avatarUrl={it.profile_icon}
             />
+            // <LeaderboardEntry
+            //   key={it.rank}
+            //   label={it.username}
+            //   value={String(it.level)}
+            //   index={String(it.rank)}
+            //   image={it.profile_icon}
+            // />
           ))}
           {items.length === 0 && (
-            <div style={{ padding: 12, color: '#9BA3AF' }}>No leaderboard data.</div>
+            <div className="min-h-[30vh] flex items-center justify-center text-gray-400 text-sm">
+              No leaderboard data.
+            </div>
           )}
         </div>
       )}
