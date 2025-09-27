@@ -49,11 +49,12 @@ class PremiumSubscription(models.Model):
 
         # Derive status if currently pending or active and time window changed
         now = timezone.now()
-        if self.end_date and now > self.end_date:
-            self.status = self.Status.EXPIRED
-        elif self.start_date <= now <= self.end_date and self.status != self.Status.EXPIRED:
-            # Only set to active if not already expired
-            self.status = self.Status.ACTIVE if self.status != self.Status.ACTIVE else self.status
+        if self.status != self.Status.PENDING:
+            if self.end_date and now > self.end_date:
+                self.status = self.Status.EXPIRED
+            elif self.start_date <= now <= self.end_date and self.status != self.Status.EXPIRED:
+                # Only set to active if not already expired
+                self.status = self.Status.ACTIVE if self.status != self.Status.ACTIVE else self.status
         super().save(*args, **kwargs)
 
     @property
