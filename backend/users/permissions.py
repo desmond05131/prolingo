@@ -11,7 +11,7 @@ class IsAdminRole(BasePermission):
         if not user or not getattr(user, "is_authenticated", False):
             return False
         role = getattr(user, "role", None)
-        return bool(role == "admin" or getattr(user, "is_staff", False))
+        return bool(role == "admin" or role == "lecturer" or getattr(user, "is_staff", False))
 
 
 class IsOwnerOrAdmin(BasePermission):
