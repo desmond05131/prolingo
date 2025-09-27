@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useBoundStore, setCourses, setSelectedCourse, removeCourse } from "@/stores/stores";
+import { useBoundStore, setCourses, setSelectedCourse } from "@/stores/stores";
 import { AddCourseModal } from "@/components/learn/AddCourseModal";
 import { listUserCourses } from "@/client-api";
 import { MOCK_USER_COURSES } from "@/constants";
@@ -71,36 +71,6 @@ export function CourseSelect() {
     return () => window.removeEventListener("mousedown", handleClick);
   }, [open]);
 
-  // Keyboard interactions
-  useEffect(() => {
-    function handleKey(e) {
-      if (!open) return;
-      if (e.key === "Escape") {
-        e.preventDefault();
-        close();
-      } else if (e.key === "ArrowDown") {
-        e.preventDefault();
-        setHighlightIndex((i) => {
-          const next = Math.min((i < 0 ? 0 : i + 1), courses.length - 1);
-          return next;
-        });
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        setHighlightIndex((i) => {
-          const next = Math.max(i - 1, 0);
-            return next;
-        });
-      } else if (e.key === "Enter" || e.key === " ") {
-        if (highlightIndex >= 0 && courses[highlightIndex]) {
-          e.preventDefault();
-          onSelect(courses[highlightIndex], highlightIndex);
-        }
-      }
-    }
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [open, highlightIndex, courses, onSelect]);
-
   const label = selectedCourse ? selectedCourse.course_title : "Select a course";
 
   const handleOpenModal = () => {
@@ -167,18 +137,13 @@ export function CourseSelect() {
               <li className="px-3 py-2 text-sm text-gray-500">No courses available, join a course!</li>
             )}
             {courses.map((c, idx) => {
-              const isHighlighted = idx === highlightIndex;
               const isSelected = selectedCourse?.id === c.id;
               return (
                 <li
                   key={c.id}
                   role="option"
                   aria-selected={isSelected}
-                  onMouseEnter={() => setHighlightIndex(idx)}
-                  onMouseLeave={() => setHighlightIndex(-1)}
-                  className={`group flex items-start gap-2 rounded-md px-3 py-2 text-sm transition-colors ${
-                    isHighlighted ? "bg-indigo-50" : ""
-                  } ${isSelected ? "font-semibold text-indigo-600" : "text-gray-700"}`}
+                  className={`group flex items-start gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-indigo-50 ${isSelected ? "font-semibold text-indigo-600" : "text-gray-700"}`}
                 >
                   <button
                     type="button"
@@ -189,19 +154,6 @@ export function CourseSelect() {
                       <span>{c.course_title}</span>
                       <span className="text-xs text-gray-500 leading-snug">{c.course_description}</span>
                     </div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeCourse(c.id);
-                    }}
-                    className="opacity-60 hover:opacity-100 text-gray-400 hover:text-red-600 transition-colors p-1 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
-                    aria-label={`Remove ${c.course_title}`}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
-                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
                   </button>
                 </li>
               );
@@ -221,7 +173,7 @@ export function CourseSelect() {
               >
                 <path d="M10 3a1 1 0 0 1 1 1v5h5a1 1 0 1 1 0 2h-5v5a1 1 0 1 1-2 0v-5H4a1 1 0 1 1 0-2h5V4a1 1 0 0 1 1-1Z" />
               </svg>
-              Add / join course
+              Enroll / Unenroll Course
             </button>
           </div>
         </div>

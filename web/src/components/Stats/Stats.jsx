@@ -56,11 +56,7 @@ const TrophyBarsIcon = ({ className = 'w-5 h-5' }) => (
 );
 
 export const Stats = ({ className = '' }) => {
-	const { level, xp, energy, streak } = useStatsState();
-
-	// Progress calculation (example formula reused from obsolete component)
-	const nextLevelTotal = level * 50 + 50;
-	const progressPct = Math.min(100, (xp / nextLevelTotal) * 100);
+	const { level, energy, streak, nextLevelProgressPct, rank, loading, streakDays, streakSaversLeft, applyStreakSaver, timeToMaxEnergySeconds } = useStatsState();
 
 	// Energy: map total energy (0-100?) to 5 segments
 	const maxEnergy = 100; // assumption based on hook default
@@ -73,6 +69,17 @@ export const Stats = ({ className = '' }) => {
 		if (energy <= start) return 0; // empty
 		return (energy - start) / segmentValue; // partial 0-1
 	});
+
+	// Build a Set of YYYY-MM-DD checkins from streakDays
+	const checkinSet = React.useMemo(() => {
+		if (!Array.isArray(streakDays)) return new Set();
+		const s = new Set();
+		for (const d of streakDays) {
+			const iso = typeof d?.daily_streak_date === 'string' ? d.daily_streak_date.slice(0,10) : undefined;
+			if (iso) s.add(iso);
+		}
+		return s;
+	}, [streakDays]);
 
 	return (
 		<aside
@@ -89,7 +96,7 @@ export const Stats = ({ className = '' }) => {
 								</button>
 							</PopoverTrigger>
 							<PopoverContent align="end" className="w-auto" sideOffset={8}>
-								<StreakPopover />
+								<StreakPopover checkins={checkinSet} onUseStreakSaver={applyStreakSaver} streakSaversLeft={streakSaversLeft} />
 								<PopoverArrow className="fill-neutral-900/95" />
 							</PopoverContent>
 						</Popover>
@@ -110,9 +117,9 @@ export const Stats = ({ className = '' }) => {
 							<div className="w-full h-3 rounded-full bg-neutral-800 overflow-hidden">
 								<div
 									className="h-full rounded-full bg-green-500 transition-all duration-500"
-									style={{ width: `${progressPct}%` }}
+									style={{ width: `${Math.max(0, Math.min(100, nextLevelProgressPct || 0))}%` }}
 									aria-label="Level progress"
-									aria-valuenow={progressPct}
+									aria-valuenow={nextLevelProgressPct || 0}
 									aria-valuemin={0}
 									aria-valuemax={100}
 									role="progressbar"
@@ -135,15 +142,26 @@ export const Stats = ({ className = '' }) => {
 									))}
 								</div>
 							</div>
+							{typeof timeToMaxEnergySeconds === 'number' && timeToMaxEnergySeconds > 0 && (
+								<div className="text-xs text-neutral-400">
+									Full in {formatDuration(timeToMaxEnergySeconds)}
+								</div>
+							)}
 						</div>
 
 				{/* Leaderboards Rank Card */}
-				<div className="rounded-xl border border-white/15 bg-neutral-900/70 backdrop-blur-sm px-6 py-5 shadow-md flex flex-col gap-4">
+								<div className="rounded-xl border border-white/15 bg-neutral-900/70 backdrop-blur-sm px-6 py-5 shadow-md flex flex-col gap-4">
 					<h2 className="text-base font-bold tracking-wide">Leaderboards Rank</h2>
-					<div className="flex items-center gap-3 text-sm font-semibold text-neutral-300">
-						<TrophyBarsIcon className="w-5 h-5 text-neutral-400" />
-						<span>No Rank</span>
-					</div>
+										<div className="flex items-center gap-3 text-sm font-semibold text-neutral-300">
+												<TrophyBarsIcon className="w-5 h-5 text-neutral-400" />
+												{loading ? (
+													<span className="text-neutral-400">Loading…</span>
+												) : rank || rank === 0 ? (
+													<span>Rank #{rank}</span>
+												) : (
+													<span>No Rank</span>
+												)}
+										</div>
 				</div>
 			</div>
 		</aside>
@@ -151,4 +169,15 @@ export const Stats = ({ className = '' }) => {
 };
 
 export default Stats;
+
+// Helper: format seconds as h:mm:ss or m:ss
+function formatDuration(totalSeconds) {
+	const s = Math.max(0, Math.floor(totalSeconds || 0));
+	const hours = Math.floor(s / 3600);
+	const minutes = Math.floor((s % 3600) / 60);
+	const seconds = s % 60;
+	const pad = (n) => String(n).padStart(2, '0');
+	if (hours > 0) return `${hours}:${pad(minutes)}:${pad(seconds)}`;
+	return `${minutes}:${pad(seconds)}`;
+}
 

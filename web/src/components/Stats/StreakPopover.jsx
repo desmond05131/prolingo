@@ -1,5 +1,4 @@
-import React, { useMemo, useState, useCallback } from 'react';
-import { MOCK_STREAK_CHECKINS } from '@/constants.js';
+import React, { useMemo } from 'react';
 
 // Utility to build calendar matrix for current month
 function buildMonthMatrix(date = new Date()) {
@@ -24,24 +23,9 @@ function buildMonthMatrix(date = new Date()) {
   return weeks;
 }
 
-export const StreakPopover = () => {
+export const StreakPopover = ({ checkins = new Set(), onUseStreakSaver, streakSaversLeft = 0 }) => {
   const today = new Date();
   const todayISO = today.toISOString().slice(0, 10);
-  const [checkins, setCheckins] = useState(new Set(MOCK_STREAK_CHECKINS));
-
-  // Helper: compute streak length ending today (or last checked day if today not checked yet?)
-  const computeStreak = useCallback((set) => {
-    let s = 0;
-    for (let i = 0; ; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const iso = d.toISOString().slice(0, 10);
-      if (set.has(iso)) s++; else break;
-    }
-    return s;
-  }, []);
-
-  const streak = computeStreak(checkins);
   const monthMatrix = useMemo(() => buildMonthMatrix(new Date()), []);
   const monthLabel = new Date().toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
 
@@ -57,9 +41,13 @@ export const StreakPopover = () => {
     return null;
   }, [checkins]);
 
-  const handleRestore = () => {
-    if (!latestMissed) return;
-    setCheckins((prev) => new Set(prev).add(latestMissed));
+  const handleRestore = async () => {
+    if (!latestMissed || !onUseStreakSaver) return;
+    try {
+      await onUseStreakSaver(latestMissed);
+    } catch {
+      // Swallow errors here; parent can show toast if needed
+    }
   };
 
   return (
@@ -73,11 +61,12 @@ export const StreakPopover = () => {
             <button
               type="button"
               onClick={handleRestore}
-              className="text-xs font-medium px-2 py-1 rounded-md bg-neutral-800/70 hover:bg-neutral-700/70 text-amber-300 border border-neutral-700 transition-colors"
+              disabled={!streakSaversLeft}
+              className="text-xs font-medium px-2 py-1 rounded-md border transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-neutral-800/70 hover:bg-neutral-700/70 text-amber-300 border-neutral-700"
             >
               Use Streak Saver
             </button>
-            <div className="text-[10px] text-neutral-500">Streak saver left: 1</div>
+            <div className="text-[10px] text-neutral-500">Streak savers left this month: {streakSaversLeft}</div>
           </div>
         )}
 

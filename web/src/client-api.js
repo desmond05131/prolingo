@@ -148,6 +148,14 @@ export async function getLeaderboardTop50(signal) {
   return data;
 }
 
+// Get current user's leaderboard info (rank, level, xp, etc.)
+// Schema:
+// { rank, user_id, username, xp_value, level, profile_icon }
+export async function getMyLeaderboard(signal) {
+  const { data } = await api.get('/client/leaderboard/me/', { signal });
+  return data;
+}
+
 // --- Achievements ---
 // Endpoint returns an array of achievements
 // Schema: [{ achievement_id, reward_type, reward_amount, reward_content, reward_content_description }]
@@ -164,6 +172,38 @@ export async function claimAchievement(achievementId) {
     throw new Error('claimAchievement: achievementId is required');
   }
   const { data } = await api.post('/client/achievements/claim/', { achievement_id: achievementId });
+  return data;
+}
+
+// --- Daily Streaks ---
+// GET: current user's daily streak info
+// Schema: { streak_count: number, streak_days: [{ daily_streak_date: ISOString, is_streak_saver: boolean }] }
+export async function getMyDailyStreak(signal) {
+  const { data } = await api.get('/client/dailystreaks/me/', { signal });
+  return data;
+}
+
+// POST: use streak saver for a specific date (string 'YYYY-MM-DD')
+export async function useStreakSaver(date) {
+  if (!date) throw new Error('useStreakSaver: date is required');
+  const { data } = await api.post('/client/dailystreaks/use-streak-saver/', { date });
+  return data;
+}
+
+// --- Game Info (current user) ---
+// Get current user's game info: xp, energy, level, next level progress
+// Schema:
+// {
+//   "gameinfo_id": number,
+//   "xp_value": number,
+//   "energy_value": number,
+//   "energy_last_updated_date": string,
+//   "level": number,
+//   "next_level_xp": number,
+//   "next_level_progress_pct": number
+// }
+export async function getMyGameInfo(signal) {
+  const { data } = await api.get('/client/gameinfo/me/', { signal });
   return data;
 }
 
@@ -189,8 +229,12 @@ export const clientApi = {
   fetchClientUserTests,
   getTestQuestions,
   getLeaderboardTop50,
+  getMyLeaderboard,
   listAchievements,
   claimAchievement,
+  getMyDailyStreak,
+  useStreakSaver,
+  getMyGameInfo,
   listUserCourses,
   joinUserCourse,
   unjoinUserCourse,
