@@ -11,7 +11,7 @@ class ClientListUserCoursesView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        qs = UserCourse.objects.filter(user=self.request.user).select_related("course")
+        qs = UserCourse.objects.filter(user=self.request.user, is_dropped=False).select_related("course")
         course_id = self.request.query_params.get("course_id")
         if course_id:
             qs = qs.filter(course_id=course_id)
