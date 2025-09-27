@@ -93,6 +93,8 @@ export const UnitSection = ({ unit }) => {
       <UnitHeader
         unitNumber={unit.unitNumber}
         description={unit.description}
+        fullDescription={unit.fullDescription}
+        learningResourceUrl={unit.learningResourceUrl}
         backgroundColor={unit.backgroundColor}
         borderColor={unit.borderColor}
       />

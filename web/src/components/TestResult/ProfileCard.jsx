@@ -1,11 +1,13 @@
 import React from 'react';
+import ProfileAvatar from '../Profile/ProfileAvatar';
 
-export default function ProfileCard({ username, currentLevel, levelProgressPercent }) {
+export default function ProfileCard({ username, profile_icon, currentLevel, levelProgressPercent }) {
   return (
     <div className="rounded-xl bg-primary-600/90 px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-6 shadow-lg">
-      <div className="flex-shrink-0 h-20 w-20 rounded-full bg-white border-4 border-black/30 flex items-center justify-center text-2xl font-bold text-emerald-700">
+      <ProfileAvatar src={profile_icon} alt={username} size={80} />
+      {/* <div className="flex-shrink-0 h-20 w-20 rounded-full bg-white border-4 border-black/30 flex items-center justify-center text-2xl font-bold text-emerald-700">
         {username?.[0] || '?'}
-      </div>
+      </div> */}
       <div className="flex flex-col gap-1 flex-1 min-w-[180px]">
         <span className="text-xl font-bold leading-tight">{username}</span>
         <span className="text-sm tracking-wide font-medium opacity-90">Current Level</span>

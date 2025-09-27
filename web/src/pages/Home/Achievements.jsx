@@ -78,7 +78,7 @@ function AchievementsHome() {
 
       // Title/description derived from targets first (prefer specific goals)
       if (targetTestId) {
-        title = `Complete Test ${targetTestId}`;
+        title = `Complete Test "${it.target_completed_test_display}"`;
         description = it.reward_content_description || "Complete the required test to claim the reward.";
       } else if (targetStreak != null) {
         const target = Number(targetStreak) || 0;
@@ -102,30 +102,66 @@ function AchievementsHome() {
         description = it.reward_content_description || "";
       }
 
-      // Progress calculation: prioritize specific target if present
+      // If multiple targets exist (e.g., test + streak + xp), build a combined, natural-language description
+      const conditionParts = [];
+      if (targetTestId) conditionParts.push(`complete Test "${it.target_completed_test_display}"`);
+      if (targetStreak != null) conditionParts.push(`maintain a ${Number(targetStreak) || 0}-day streak`);
+      if (targetXp != null) conditionParts.push(`reach ${Number(targetXp) || 0} XP`);
+
+      if (conditionParts.length >= 2) {
+        const joinWithAnd = (parts) => {
+          if (parts.length <= 1) return parts[0] || "";
+          if (parts.length === 2) return `${parts[0]} and ${parts[1]}`;
+          return `${parts.slice(0, -1).join(", ")}, and ${parts[parts.length - 1]}`;
+        };
+        const base = (it.reward_content_description || "").trim();
+        const requirements = `To claim the reward, ${joinWithAnd(conditionParts)}.`;
+        description = base ? `${base} ${requirements}` : requirements;
+      }
+
+      // Progress calculation: combine multiple conditions if present.
+      // Each condition contributes one 'step' when satisfied; otherwise partials from streak/xp use server/user values capped by target.
       let progress = null;
+      const conditionProgress = [];
+
+      // Test condition -> binary completion
       if (targetTestId) {
-        // If server says claimable/claimed, we consider it satisfied
         const doneFromServer = claimed || claimable;
         const doneLocal = Array.isArray(completedTestIds) && completedTestIds.includes(targetTestId);
         const done = doneFromServer || doneLocal;
-        progress = { current: done ? 1 : 0, total: 1 };
-      } else if (targetStreak != null) {
+        conditionProgress.push({ current: done ? 1 : 0, total: 1 });
+      }
+
+      // Streak condition -> partial progress allowed
+      if (targetStreak != null) {
         const total = Math.max(0, Number(targetStreak) || 0);
         if (total > 0) {
-          // Prefer server-provided progress
           let current = typeof it.current_progress_streak === 'number' ? it.current_progress_streak : Math.max(0, Number(userStreak) || 0);
           if ((claimed || claimable) && current < total) current = total;
-          progress = { current, total };
+          current = Math.min(current, total);
+          conditionProgress.push({ current, total });
         }
-      } else if (targetXp != null) {
+      }
+
+      // XP condition -> partial progress allowed
+      if (targetXp != null) {
         const total = Math.max(0, Number(targetXp) || 0);
         if (total > 0) {
-          // Prefer server-provided progress
           let current = typeof it.current_progress_xp === 'number' ? it.current_progress_xp : Math.max(0, Number(userXp) || 0);
           if ((claimed || claimable) && current < total) current = total;
-          progress = { current, total };
+          current = Math.min(current, total);
+          conditionProgress.push({ current, total });
         }
+      }
+
+      if (conditionProgress.length === 1) {
+        progress = conditionProgress[0];
+      } else if (conditionProgress.length > 1) {
+        // Normalize each to [0,1] and sum, total equals number of conditions
+        const normalizedSum = conditionProgress.reduce((acc, p) => acc + (p.total > 0 ? (p.current / p.total) : 0), 0);
+        const total = conditionProgress.length;
+        // Represent as x/total, where x can be fractional but we show as nearest integer in bar label by default
+        progress = { current: normalizedSum, total };
       }
 
       return {

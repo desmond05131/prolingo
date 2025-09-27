@@ -80,7 +80,10 @@ export const StreakPopover = ({ checkins = new Set(), onUseStreakSaver, streakSa
             {week.map(day => {
               const iso = day.toISOString().slice(0,10);
               const inMonth = day.getMonth() === new Date().getMonth();
-              const checked = checkins.has(iso);
+                const checked = checkins.has(
+                `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`
+                );
+              // console.log({ day, checkins, a:`${day.getFullYear()}-${day.getMonth()}-${day.getDate()}` });
               const isToday =
                 day.getFullYear() === today.getFullYear() &&
                 day.getMonth() === today.getMonth() &&

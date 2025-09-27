@@ -29,6 +29,19 @@ export default function RemoteSelect({
 }) {
   const { options, loading, error } = useRemoteOptions({ fetcher, enabled });
 
+  // Ensure options are distinct by the value derived from getValue
+  const uniqueOptions = React.useMemo(() => {
+    const seen = new Set();
+    const out = [];
+    for (const opt of options || []) {
+      const key = String(getValue(opt) ?? '');
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(opt);
+    }
+    return out;
+  }, [options, getValue]);
+
   return (
     <div className="space-y-1">
       <Select
@@ -40,7 +53,7 @@ export default function RemoteSelect({
           <SelectValue placeholder={loading ? 'Loading…' : placeholder} />
         </SelectTrigger>
         <SelectContent>
-          {options.map((opt) => {
+          {uniqueOptions.map((opt) => {
             const v = getValue(opt);
             const label = getLabel(opt);
             return (

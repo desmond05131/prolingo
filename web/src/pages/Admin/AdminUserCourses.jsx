@@ -11,6 +11,7 @@ import {
 } from '@/api';
 import { MOCK_ADMIN_USER_COURSES, ADMIN_USER_COURSE_PRIMARY_KEY } from '@/constants';
 import UserCourseFormDialog from '@/components/admin/UserCourseFormDialog';
+import { formatDateTime } from '@/lib/datetime';
 
 const columnHelper = createColumnHelper();
 
@@ -55,13 +56,14 @@ export default function AdminUserCourses() {
   }, [loadData, toast]);
 
   const columns = useMemo(() => [
+    columnHelper.accessor('user_course_id', { header: 'ID', sortingFn: 'alphanumeric' }),
+    columnHelper.accessor('user', { header: 'User ID', sortingFn: 'alphanumeric' }),
     columnHelper.accessor('username', { header: 'Username', sortingFn: 'alphanumeric' }),
-    columnHelper.accessor('user_id', { header: 'User ID', sortingFn: 'alphanumeric' }),
+    columnHelper.accessor('course', { header: 'Course ID', sortingFn: 'alphanumeric' }),
     columnHelper.accessor('course_title', { header: 'Course Title', sortingFn: 'alphanumeric' }),
-    columnHelper.accessor('course_id', { header: 'Course ID', sortingFn: 'alphanumeric' }),
     columnHelper.accessor('enrollment_date', {
       header: 'Enrollment Date',
-      cell: info => <span className="text-neutral-300">{info.getValue() || '—'}</span>,
+      cell: info => <span className="text-neutral-300">{formatDateTime(info.getValue()) || '—'}</span>,
       sortingFn: (a,b,id) => {
         const va = a.getValue(id); const vb = b.getValue(id);
         const ta = va ? Date.parse(va) : 0; const tb = vb ? Date.parse(vb) : 0;

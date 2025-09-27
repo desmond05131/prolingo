@@ -61,10 +61,6 @@ export default function UserTestAnswerFormDialog({ open, onOpenChange, record, o
           )}
           <div className="grid gap-4">
             <div className="space-y-1">
-              <Label htmlFor="user_test_id">User Test ID</Label>
-              <Input id="user_test_id" name="user_test_id" value={form.user_test_id || ''} onChange={handleChange} placeholder="ut_001" disabled={!isCreate} />
-            </div>
-            <div className="space-y-1">
               <Label htmlFor="given_answer_text">Answer Text</Label>
               <Input id="given_answer_text" name="given_answer_text" value={form.given_answer_text || ''} onChange={handleChange} placeholder="Paris" />
             </div>

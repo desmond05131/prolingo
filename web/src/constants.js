@@ -222,7 +222,6 @@ export const MOCK_ADMIN_NAV = [
   { id: 'nav_user_claimed_achievements', label: 'User Claimed Achievements', to: '/admin/user-claimed-achievements', icon: 'badge' },
   { id: 'nav_user_courses', label: 'User Courses', to: '/admin/user-courses', icon: 'book' },
   { id: 'nav_user_tests', label: 'User Tests', to: '/admin/user-tests', icon: 'test' },
-  { id: 'nav_create_user', label: 'Create User', to: '/admin/create-user', icon: 'user-plus' },
 ];
 
 // Mock subscription records (would come from backend)

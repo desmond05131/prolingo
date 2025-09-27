@@ -26,6 +26,10 @@ export function AchievementRow({
   const claimBtnColor = completed
     ? 'bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600'
     : 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600';
+  // Build a label for the progress bar. If current is fractional, show a rounded integer over total.
+  const progressLabel = hasProgress
+    ? (Number.isInteger(current) ? undefined : `${Math.round(current)}/${total}`)
+    : undefined;
 
   return (
     <Card
@@ -73,13 +77,13 @@ export function AchievementRow({
                 </button>
                 {hasProgress && (
                   <div className="flex-1">
-                    <ProgressBar current={current} total={total} />
+                    <ProgressBar current={current} total={total} label={progressLabel} />
                   </div>
                 )}
               </div>
             ) : (
               hasProgress && (
-                <ProgressBar className="mt-3" current={current} total={total} />
+                <ProgressBar className="mt-3" current={current} total={total} label={progressLabel} />
               )
             )}
           </div>

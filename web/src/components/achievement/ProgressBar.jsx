@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 
-export function ProgressBar({ current = 0, total = 0, className }) {
+export function ProgressBar({ current = 0, total = 0, className, label }) {
   const pct = total > 0 ? Math.min(100, Math.round((current / total) * 100)) : 0;
   const completed = total > 0 && current >= total;
   return (
@@ -13,7 +13,7 @@ export function ProgressBar({ current = 0, total = 0, className }) {
         />
         <div className='absolute inset-0 flex items-center justify-center'>
           <span className='text-xs font-semibold text-gray-700 dark:text-gray-100 whitespace-nowrap'>
-            {completed ? 'Completed' : `${current}/${total}`}
+            {completed ? (label ?? 'Completed') : (label ?? `${current}/${total}`)}
           </span>
         </div>
       </div>

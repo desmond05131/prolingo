@@ -7,8 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import LoadingIndicator from "../LoadingIndicator";
-import { login } from "@/client-api";
-import { refreshStats } from "@/stores/stores";
+import { login, getMyProfile } from "@/client-api";
+import { refreshStats, refreshUserCourses, setUserRole } from "@/stores/stores";
 
 export function LoginForm() {
     const [username, setUsername] = useState("");
@@ -26,10 +26,26 @@ export function LoginForm() {
             const res = await login({ username, password });
             localStorage.setItem(ACCESS_TOKEN, res.access);
             localStorage.setItem(REFRESH_TOKEN, res.refresh);
+
+            // Fetch current user to determine role-based redirect
+            let dest = "/learn";
+            try {
+                const me = await getMyProfile();
+                const role = String(me?.role || "student").toLowerCase();
+                // Save role to global store for app-wide usage
+                setUserRole(role);
+                dest = role === "student" ? "/learn" : "/admin";
+            } catch {
+                // If fetching profile fails, default to learn
+                dest = "/learn";
+            }
+
             // Proactively refresh global stats so the sidebar reflects the logged-in user
             // Fire-and-forget to avoid blocking navigation
-            refreshStats().catch(() => {});
-            navigate("/learn");
+            refreshStats().catch(() => { });
+            refreshUserCourses().catch(() => { });
+
+            navigate(dest);
         } catch (err) {
             const message =
                 err?.response?.data?.detail ||

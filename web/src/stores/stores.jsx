@@ -42,6 +42,8 @@ export const useBoundStore = create(() => ({
   streakSaversLeft: 0,
   timeToMaxEnergySeconds: null,
   username: '',
+  profile_icon: null,
+  role: null, // 'student' or other (e.g., 'admin')
 }));
 
 export const setUnits = (units) => {
@@ -148,6 +150,8 @@ export const loadLearnUnitsForCourse = async (courseId, signal) => {
             borderColor: "border-[#FFA531]",
             tiles: [],
             order_index: row.chapter?.order_index,
+            fullDescription: row.chapter?.description || '',
+            learningResourceUrl: row.chapter?.learning_resource_url || '',
           });
         }
         const unit = byChapter.get(chapId);
@@ -201,6 +205,7 @@ export const refreshStats = async (signal) => {
     if (lb && typeof lb.rank !== "undefined") {
       next.rank = lb.rank;
       next.username = lb.username || '';
+      next.profile_icon = lb.profile_icon || null;
     } else {
       next.rank = null;
     }
@@ -247,4 +252,10 @@ export const useStreakSaver = async (date) => {
   } catch {
     // ignore
   }
+};
+
+// Setter: update role in global store
+export const setUserRole = (role) => {
+  const r = typeof role === 'string' ? role.toLowerCase() : null;
+  useBoundStore.setState({ role: r });
 };

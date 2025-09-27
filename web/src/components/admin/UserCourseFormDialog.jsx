@@ -12,6 +12,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { ADMIN_USER_COURSE_PRIMARY_KEY } from '@/constants';
+import RemoteSelect from '../ui/remote-select';
+import { fetchAdminTests, fetchAdminUsers } from '@/api';
 
 export default function UserCourseFormDialog({ open, onOpenChange, record, onSave, primaryKey = ADMIN_USER_COURSE_PRIMARY_KEY }) {
   const hasPrimary = !!(record && record[primaryKey]);
@@ -53,39 +55,64 @@ export default function UserCourseFormDialog({ open, onOpenChange, record, onSav
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{isCreate ? 'Create User Course' : 'Edit User Course'}</DialogTitle>
+          <DialogTitle>
+            {isCreate ? "Create User Course" : "Edit User Course"}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           {error && (
-            <div className="text-sm text-destructive border border-destructive/40 bg-destructive/10 rounded px-3 py-2">{error}</div>
+            <div className="text-sm text-destructive border border-destructive/40 bg-destructive/10 rounded px-3 py-2">
+              {error}
+            </div>
           )}
           <div className="grid gap-4">
             <div className="space-y-1">
-              <Label htmlFor="username">Username</Label>
-              <Input id="username" name="username" value={form.username || ''} onChange={handleChange} placeholder="Jane Developer" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label htmlFor="user_id">User ID</Label>
-                <Input id="user_id" name="user_id" value={form.user_id || ''} onChange={handleChange} placeholder="user_123" />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="course_id">Course ID</Label>
-                <Input id="course_id" name="course_id" value={form.course_id || ''} onChange={handleChange} placeholder="course_101" />
-              </div>
+              <Label htmlFor="username">User</Label>
+            <RemoteSelect
+              id="user"
+              value={String(form.user ?? "")}
+              onChange={(val) => setForm((f) => ({ ...f, user: val }))}
+              fetcher={fetchAdminUsers}
+              getValue={(u) => u.id}
+              getLabel={(u) => u.username}
+              placeholder="Select a user"
+              enabled={open}
+              disabled={!isCreate && !!record?.user}
+              />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="course_title">Course Title</Label>
-              <Input id="course_title" name="course_title" value={form.course_title || ''} onChange={handleChange} placeholder="Intro to C++" />
+              <Label htmlFor="course">Course</Label>
+              <RemoteSelect
+                id="course"
+                value={String(form.course ?? '')}
+                onChange={(val) => setForm(f => ({ ...f, course: val }))}
+                fetcher={fetchAdminTests}
+                getValue={(u) => u?.course?.course_id ?? '-'}
+                getLabel={(u) => u?.course?.title ?? 'N/A'}
+                placeholder="Select a course"
+                enabled={open}
+                disabled={!isCreate && !!(record?.course)}
+                />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="enrollment_date">Enrollment Date</Label>
-                <Input id="enrollment_date" name="enrollment_date" type="date" value={form.enrollment_date || ''} onChange={handleChange} />
+                <Input
+                  id="enrollment_date"
+                  name="enrollment_date"
+                  type="date"
+                  value={form.enrollment_date || ""}
+                  onChange={handleChange}
+                />
               </div>
               <div className="space-y-1">
                 <Label>Is Dropped</Label>
-                <Select value={String(!!form.is_dropped)} onValueChange={(v) => setForm(f => ({ ...f, is_dropped: v === 'true' }))}>
+                <Select
+                  value={String(!!form.is_dropped)}
+                  onValueChange={(v) =>
+                    setForm((f) => ({ ...f, is_dropped: v === "true" }))
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select" />
                   </SelectTrigger>
@@ -99,9 +126,19 @@ export default function UserCourseFormDialog({ open, onOpenChange, record, onSav
           </div>
           <DialogFooter className="pt-2">
             <DialogClose asChild>
-              <Button type="button" variant="ghost" disabled={saving}>Cancel</Button>
+              <Button type="button" variant="ghost" disabled={saving}>
+                Cancel
+              </Button>
             </DialogClose>
-            <Button type="submit" disabled={saving}>{saving ? (isCreate ? 'Creating...' : 'Saving...') : (isCreate ? 'Create' : 'Save')}</Button>
+            <Button type="submit" disabled={saving}>
+              {saving
+                ? isCreate
+                  ? "Creating..."
+                  : "Saving..."
+                : isCreate
+                ? "Create"
+                : "Save"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

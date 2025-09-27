@@ -24,6 +24,7 @@ export default function TestResult() {
   const elapsedSeconds = state?.elapsedSeconds || 0;
   
   const username = useBoundStore((s) => s.username);
+  const profile_icon = useBoundStore((s) => s.profile_icon);
   const currentLevel = useBoundStore((s) => s.level);
   const streak = useBoundStore((s) => s.streak);
   const xpAwarded = state?.submitResult?.xp_awarded;
@@ -31,7 +32,7 @@ export default function TestResult() {
   const total = state?.submitResult?.total_questions ?? 0;
   const incorrect = Math.max(total - correct, 0);
   const scorePercent = total > 0 ? (correct / total) * 100 : 0;
-  const levelProgressPercent = scorePercent;
+  const levelProgressPercent = useBoundStore((s) => s.nextLevelProgressPct);
   
   useEffect(() => {
     refreshStats().catch(() => {});
@@ -46,7 +47,7 @@ export default function TestResult() {
         </div>
 
         {/* Section 1: User Profile & Level */}
-        <ProfileCard username={username} currentLevel={currentLevel} levelProgressPercent={levelProgressPercent} />
+        <ProfileCard username={username} profile_icon={profile_icon} currentLevel={currentLevel} levelProgressPercent={levelProgressPercent} />
 
         {/* Parent Card with nested sub-cards */}
         <div className="rounded-2xl bg-[#111418] border border-[#242c36] px-6 py-7 flex flex-col gap-8 shadow-lg">

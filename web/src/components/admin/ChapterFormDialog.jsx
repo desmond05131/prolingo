@@ -64,7 +64,7 @@ export default function ChapterFormDialog({ open, onOpenChange, record, onSave, 
               <Label htmlFor="course">Course</Label>
               <RemoteSelect
                 id="course"
-                value={form.course || ''}
+                value={String(form.course) || ''}
                 onChange={(value) => setForm(f => ({ ...f, course: value }))}
                 fetcher={(signal) => fetchAdminCourses(signal)}
                 getValue={(c) => c.course_id}

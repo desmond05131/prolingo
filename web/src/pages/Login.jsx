@@ -11,10 +11,10 @@ function Login() {
                         Don't have an account? {" "}
                         <Link to="/register" className="text-blue-400 hover:underline">Register</Link>
                     </div>
-                    <div className="mt-2">
+                    {/* <div className="mt-2">
                         Forgot your password? {" "}
                         <Link to="/forgot-password" className="text-blue-400 hover:underline">Reset it</Link>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>

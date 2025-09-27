@@ -16,6 +16,7 @@ import {
 import { MOCK_ADMIN_USER_TESTS, ADMIN_USER_TEST_PRIMARY_KEY, MOCK_ADMIN_USER_TEST_ANSWERS, ADMIN_USER_TEST_ANSWER_PRIMARY_KEY } from '@/constants';
 import UserTestFormDialog from '@/components/admin/UserTestFormDialog';
 import UserTestAnswerFormDialog from '@/components/admin/UserTestAnswerFormDialog';
+import { formatDateTime } from '@/lib/datetime';
 
 const columnHelper = createColumnHelper();
 
@@ -135,13 +136,14 @@ export default function AdminUserTests() {
   }, [answersByTest, toast, loadAnswers]);
 
   const columns = useMemo(() => [
+    columnHelper.accessor('user_test_id', { header: 'ID', sortingFn: 'alphanumeric' }),
+    columnHelper.accessor('user', { header: 'User ID', sortingFn: 'alphanumeric' }),
     columnHelper.accessor('username', { header: 'Username', sortingFn: 'alphanumeric' }),
-    columnHelper.accessor('user_id', { header: 'User ID', sortingFn: 'alphanumeric' }),
+    columnHelper.accessor('test', { header: 'Test ID', sortingFn: 'alphanumeric' }),
     columnHelper.accessor('test_title', { header: 'Test Title', sortingFn: 'alphanumeric' }),
-    columnHelper.accessor('test_id', { header: 'Test ID', sortingFn: 'alphanumeric' }),
     columnHelper.accessor('attempt_date', {
       header: 'Attempted At',
-      cell: info => <span className="text-neutral-300">{info.getValue() ? new Date(info.getValue()).toLocaleString() : '—'}</span>,
+      cell: info => <span className="text-neutral-300">{info.getValue() ? formatDateTime(info.getValue()) : '—'}</span>,
       sortingFn: (a,b,id) => {
         const va = a.getValue(id); const vb = b.getValue(id);
         const ta = va ? Date.parse(va) : 0; const tb = vb ? Date.parse(vb) : 0;
