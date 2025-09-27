@@ -43,7 +43,7 @@ REST_FRAMEWORK = {
 } #configuration for JWT tokens to work properly
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=365),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 } # specify token lifetimes
 
@@ -60,10 +60,11 @@ INSTALLED_APPS = [
     'corsheaders',
 
     'users',
-    'notes',
+    # Obsolete apps removed (were under obsolete/ directory): notes, courses, stats, gamification, feedback, premium
+    'gameinfo',
+    'streaks',
+    'achievements',
     'courses',
-    'stats',
-    'gamification',
     'feedback',
     'premium',
     

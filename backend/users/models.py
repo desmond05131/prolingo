@@ -25,7 +25,8 @@ class User(AbstractUser):
 	]
 
 	email = models.EmailField(unique=True)
-	profile_icon = models.CharField(max_length=255, null=True, blank=True)
+	# Allow storing long base64-encoded images
+	profile_icon = models.TextField(null=True, blank=True)
 	role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=ROLE_STUDENT)
 	registration_date = models.DateTimeField(default=timezone.now)
 	is_premium = models.BooleanField(default=False)
