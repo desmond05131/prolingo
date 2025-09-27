@@ -384,7 +384,7 @@ export const MOCK_ADMIN_USERS = [
   },
 ];
 
-export const ADMIN_USER_PRIMARY_KEY = 'user_id';
+export const ADMIN_USER_PRIMARY_KEY = 'id';
 
 // --- User Game Infos (admin) mock data ---
 // Schema reference:

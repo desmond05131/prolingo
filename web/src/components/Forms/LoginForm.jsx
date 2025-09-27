@@ -34,7 +34,7 @@ export function LoginForm() {
                 const role = String(me?.role || "student").toLowerCase();
                 // Save role to global store for app-wide usage
                 setUserRole(role);
-                dest = role === "student" ? "/learn" : "/admin";
+                dest = role === "student" ? "/learn" : role === "lecturer" ? "/admin/course"  : "/admin";
             } catch {
                 // If fetching profile fails, default to learn
                 dest = "/learn";

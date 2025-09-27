@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { MOCK_ADMIN_NAV } from '@/constants';
+import { useBoundStore } from '@/stores/stores';
+// import { MOCK_ADMIN_NAV } from '@/constants'; // Removed unused import
 
 // Simple icon placeholder mapping (swap with real icons later)
 const Icon = ({ name, className = '' }) => {
@@ -10,7 +11,23 @@ const Icon = ({ name, className = '' }) => {
 
 export default function AdminSidebar() {
   const navigate = useNavigate();
-  const username = 'Admin User'; // TODO: replace with real auth user
+  const username = useBoundStore(s => s.username);
+  const role = useBoundStore(s => s.role);
+  const isAdminRole = typeof role === 'string' && role.toLowerCase().includes('admin');
+
+  const navbarItems = [
+    { id: 'nav_users', label: 'Users', to: '/admin/users', icon: 'users', isAdmin: true },
+    { id: 'nav_course', label: 'Course', to: '/admin/course', icon: 'course' },
+    { id: 'nav_achievement', label: 'Achievement', to: '/admin/achievement', icon: 'trophy' },
+    { id: 'nav_feedback', label: 'Feedback', to: '/admin/feedback', icon: 'feedback' },
+    { id: 'nav_subscriptions', label: 'Subscriptions', to: '/admin/subscriptions', icon: 'credit-card', isAdmin: true },
+    { id: 'nav_daily_streaks', label: 'Daily Streaks', to: '/admin/daily-streaks', icon: 'fire', isAdmin: true },
+    { id: 'nav_user_gameinfos', label: 'User Game Infos', to: '/admin/user-gameinfos', icon: 'game', isAdmin: true },
+    { id: 'nav_user_claimed_achievements', label: 'User Claimed Achievements', to: '/admin/user-claimed-achievements', icon: 'badge', isAdmin: true },
+    { id: 'nav_user_courses', label: 'User Courses', to: '/admin/user-courses', icon: 'book' },
+    { id: 'nav_user_tests', label: 'User Tests', to: '/admin/user-tests', icon: 'test' },
+  ];
+  const visibleNavbarItems = navbarItems.filter(item => !item.isAdmin || isAdminRole);
 
   return (
     <aside className="w-60 shrink-0 border-r border-neutral-800 bg-neutral-950/80 backdrop-blur-sm flex flex-col">
@@ -22,12 +39,12 @@ export default function AdminSidebar() {
       {/* Username */}
       <div className="px-4 py-3 border-b border-neutral-800">
         <p className="text-sm font-medium text-neutral-200 truncate">{username}</p>
-        <p className="text-[11px] text-neutral-500">Administrator</p>
+        <p className="text-[11px] capitalize text-neutral-500">{role}</p>
       </div>
 
       {/* Navigation items */}
       <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
-        {MOCK_ADMIN_NAV.map(item => (
+        {visibleNavbarItems.map(item => (
           <NavLink
             key={item.id}
             to={item.to}

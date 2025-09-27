@@ -101,7 +101,7 @@ export async function createAdminUser(payload) {
 }
 
 export async function updateAdminUser(id, payload) {
-    const { data } = await api.put(`/admin/users/${id}`, payload);
+    const { data } = await api.patch(`/admin/users/${id}`, payload);
     return data; // updated user record
 }
 
