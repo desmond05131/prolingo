@@ -7,6 +7,11 @@ const api = axios.create({
 
 api.interceptors.request.use(
     (config) => {
+        // Globally disable cancellation signal to avoid AbortError propagation
+        if (config && 'signal' in config) {
+            try { delete config.signal; } catch { /* ignore */ }
+        }
+
         const token =
           localStorage.getItem(ACCESS_TOKEN) ??
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkwMzk4MDY4LCJpYXQiOjE3NTg4NjIwNjgsImp0aSI6ImJhOGMxYmYzMjg1ZjQ3MWZhOWEyMDRjNDRiODhjNWEwIiwidXNlcl9pZCI6IjEifQ.sYskkqK1CbP0wA12YoKnbHOnR8S5ruDiQgtY0GTk_9E";

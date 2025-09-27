@@ -14,14 +14,13 @@ export function useRemoteOptions({ fetcher, enabled = true }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-  if (!enabled || typeof fetcher !== 'function') return;
-    const ac = new AbortController();
+    if (!enabled || typeof fetcher !== 'function') return;
     let active = true;
     setLoading(true);
     setError(null);
 
     Promise.resolve()
-      .then(() => fetcher(ac.signal))
+      .then(() => fetcher())
       .then((data) => {
         if (!active) return;
         if (Array.isArray(data)) {
@@ -32,9 +31,8 @@ export function useRemoteOptions({ fetcher, enabled = true }) {
           setError(null);
         }
       })
-      .catch((err) => {
+      .catch(() => {
         if (!active) return;
-        if (err?.name === 'AbortError' || err?.message === 'canceled') return; // ignore aborts
         setOptions([]);
         setError('Failed to load data.');
       })
@@ -43,31 +41,27 @@ export function useRemoteOptions({ fetcher, enabled = true }) {
         setLoading(false);
       });
 
-    return () => { active = false; ac.abort(); };
+    return () => { active = false; };
   }, [enabled, fetcher]);
 
   const reload = useCallback(() => {
-    // trigger by toggling enabled via state in caller, or re-provide fetcher reference.
-    // For simplicity we just call effect again by updating state
     setLoading(true);
     setError(null);
-    const ac = new AbortController();
     let active = true;
     Promise.resolve()
-      .then(() => fetcher(ac.signal))
+      .then(() => fetcher())
       .then((data) => {
         if (!active) return;
         setOptions(Array.isArray(data) ? data : []);
         setError(null);
       })
-      .catch((err) => {
+      .catch(() => {
         if (!active) return;
-        if (err?.name === 'AbortError' || err?.message === 'canceled') return;
         setOptions([]);
         setError('Failed to load data.');
       })
       .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; ac.abort(); };
+    return () => { active = false; };
   }, [fetcher]);
 
   return useMemo(() => ({ options, loading, error, reload }), [options, loading, error, reload]);
