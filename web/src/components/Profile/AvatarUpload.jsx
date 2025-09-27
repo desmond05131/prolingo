@@ -3,7 +3,7 @@ import ProfileAvatar from './ProfileAvatar';
 
 // Row 3: Avatar preview + upload/reupload
 export function AvatarUpload({ username, avatarUrl = '', onChange }) {
-  const [preview, setPreview] = useState(avatarUrl);
+  const [preview, setPreview] = useState(null);
   const inputRef = useRef(null);
 
   const handleFile = (file) => {
@@ -21,7 +21,7 @@ export function AvatarUpload({ username, avatarUrl = '', onChange }) {
       <div className="ring-2 ring-gray-200 rounded-full flex-shrink-0" style={{ width: '112px', height: '112px' }}>
         
         <ProfileAvatar
-          src={preview}
+          src={preview ?? avatarUrl}
           username={username || ''}
           size={112}
           rounded

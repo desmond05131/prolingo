@@ -4,10 +4,11 @@ import { ProfileBanner } from '../../components/Profile/ProfileBanner';
 import { ProfileDetailsForm } from '../../components/Profile/ProfileDetailsForm';
 import { AvatarUpload } from '../../components/Profile/AvatarUpload';
 import { PasswordChangeForm } from '../../components/Profile/PasswordChangeForm';
-import { listAchievements, getMyProfile, updateMyProfile } from '../../client-api';
+import { listAchievements, listUserClaimedAchievements, getMyProfile, updateMyProfile } from '../../client-api';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useToast } from '../../hooks/use-toast';
 import "../../styles/Home.css";
+import { refreshStats } from '@/stores/stores';
 
 function ProfileHome() {
   const { toast } = useToast();
@@ -22,6 +23,7 @@ function ProfileHome() {
   });
   const [profile, setProfile] = useState(null);
   const [achievements, setAchievements] = useState([]);
+  const [claimedAchievements, setClaimedAchievements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState(null);
@@ -34,13 +36,15 @@ function ProfileHome() {
       setLoading(true);
       try {
         // Fetch profile and achievements in parallel
-        const [data, ach] = await Promise.all([
+        const [data, ach, claimed] = await Promise.all([
           getMyProfile(ctrl.signal),
           listAchievements(ctrl.signal).catch(() => []),
+          listUserClaimedAchievements(ctrl.signal).catch(() => []),
         ]);
         if (!active) return;
         setProfile(data);
         setAchievements(Array.isArray(ach) ? ach : (ach?.results || []));
+        setClaimedAchievements(Array.isArray(claimed) ? claimed : (claimed?.results || []));
         setDraft((d) => ({
           ...d,
           username: data?.username || '',
@@ -61,10 +65,11 @@ function ProfileHome() {
   }, []);
 
   const bannerBadges = useMemo(() => {
-    // Map achievements to banner badge model when reward_type === 'badge'
+    // Map only CLAIMED achievements to banner badge model when reward_type === 'badge'
     const baseUrl = (import.meta.env?.VITE_API_URL || '').replace(/\/$/, '');
+    const claimedIdSet = new Set((claimedAchievements || []).map((c) => c?.achievement_id));
     return (achievements || [])
-      .filter((a) => a?.reward_type === 'badge')
+      .filter((a) => a?.reward_type === 'badge' && claimedIdSet.has(a?.achievement_id))
       .map((a) => ({
         id: a.achievement_id ?? `${a.reward_type}-${a.reward_content}`,
         imageUrl: a.reward_content
@@ -73,7 +78,7 @@ function ProfileHome() {
         label: a.reward_content_description || 'Badge',
         color: '#89b4fa',
       }));
-  }, [achievements]);
+  }, [achievements, claimedAchievements]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -117,8 +122,12 @@ function ProfileHome() {
         currentPassword: '',
         newPassword: '',
       }));
-  setMessage({ type: 'success', text: 'Profile saved.' });
-  toast.success?.('Profile saved.') || toast('Profile saved.');
+
+      // refresh state
+      refreshStats().catch(() => { });
+      
+      setMessage({ type: 'success', text: 'Profile saved.' });
+      toast.success?.('Profile saved.') || toast('Profile saved.');
     } catch (err) {
       const msg = err?.message || 'Failed to save profile.';
       setMessage({ type: 'error', text: msg });

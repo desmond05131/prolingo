@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import LoadingIndicator from "../LoadingIndicator";
 import { login } from "@/client-api";
+import { refreshStats } from "@/stores/stores";
 
-export function LoginForm({ route }) {
+export function LoginForm() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
@@ -25,6 +26,9 @@ export function LoginForm({ route }) {
             const res = await login({ username, password });
             localStorage.setItem(ACCESS_TOKEN, res.access);
             localStorage.setItem(REFRESH_TOKEN, res.refresh);
+            // Proactively refresh global stats so the sidebar reflects the logged-in user
+            // Fire-and-forget to avoid blocking navigation
+            refreshStats().catch(() => {});
             navigate("/learn");
         } catch (err) {
             const message =

@@ -118,6 +118,20 @@ export async function createTestResult(payload) {
   return data;
 }
 
+// Submit a completed test attempt for the current user
+// Endpoint: /client/user-tests/submit/
+// Payload schema:
+// {
+//   test_id: number,
+//   duration: number,
+//   answers: [{ question_id: number, answer_text: string }]
+// }
+// Returns detailed attempt summary including user_test_id and stats
+export async function submitUserTestAttempt(payload) {
+  const { data } = await api.post('/client/user-tests/submit/', payload);
+  return data;
+}
+
 // --- Notes (simple demo endpoints used in AdminHome) ---
 export async function listNotes(signal) {
   const { data } = await api.get('/notes/', { signal });
@@ -126,6 +140,44 @@ export async function listNotes(signal) {
 
 export async function createNote(payload) {
   const { data } = await api.post('/notes/', payload);
+  return data;
+}
+
+// --- Subscription (current user) ---
+// GET active subscription(s) for current user
+// Endpoint: /client/subscription/active/
+// Returns: Array of subscriptions; highlight if any item has is_active=true
+export async function getMyActiveSubscription(signal) {
+  const { data } = await api.get('/client/subscriptions/active/', { signal });
+  return data;
+}
+
+// Create a new subscription (payment pending)
+// Payload schema: { type: 'month' | 'year', is_renewable: boolean, amount: string }
+export async function createClientSubscription(payload) {
+  const { data } = await api.post('/client/subscriptions/', payload);
+  return data;
+}
+
+// Trigger payment for the latest/pending subscription
+// Backend expects no payload
+export async function payClientSubscription() {
+  const { data } = await api.post('/client/subscriptions/payment/');
+  return data;
+}
+
+// Unsubscribe (cancel current/active subscription)
+export async function unsubscribeClientSubscription() {
+  const { data } = await api.delete('/client/subscriptions/');
+  return data;
+}
+
+// --- Feedback (client) ---
+// Create a feedback entry from current user
+// Endpoint: POST /client/feedback/create/
+// Payload: { message: string }
+export async function createClientFeedback(payload) {
+  const { data } = await api.post('/client/feedback/create/', payload);
   return data;
 }
 
@@ -164,6 +216,14 @@ export async function listAchievements(signal) {
   return data;
 }
 
+// Get the list of achievements that the current user has claimed
+// Endpoint: /client/user-claimed-achievements/
+// Schema: [ { user_claimed_achievement_id, achievement_id, claimed_date } ]
+export async function listUserClaimedAchievements(signal) {
+  const { data } = await api.get('/client/user-claimed-achievements/', { signal });
+  return data;
+}
+
 // Claim an achievement for the current user
 // Expected payload: { achievement_id }
 // Endpoint assumption based on backend conventions
@@ -171,7 +231,7 @@ export async function claimAchievement(achievementId) {
   if (!achievementId && achievementId !== 0) {
     throw new Error('claimAchievement: achievementId is required');
   }
-  const { data } = await api.post('/client/achievements/claim/', { achievement_id: achievementId });
+  const { data } = await api.post(`/client/achievements/${achievementId}/claim/`);
   return data;
 }
 
@@ -223,6 +283,7 @@ export const clientApi = {
   listQuestions,
   listTestResults,
   createTestResult,
+  submitUserTestAttempt,
   listNotes,
   createNote,
   fetchClientTestsTree,
@@ -231,6 +292,7 @@ export const clientApi = {
   getLeaderboardTop50,
   getMyLeaderboard,
   listAchievements,
+  listUserClaimedAchievements,
   claimAchievement,
   getMyDailyStreak,
   useStreakSaver,
@@ -238,4 +300,9 @@ export const clientApi = {
   listUserCourses,
   joinUserCourse,
   unjoinUserCourse,
+  getMyActiveSubscription,
+  createClientSubscription,
+  payClientSubscription,
+  unsubscribeClientSubscription,
+  createClientFeedback,
 };

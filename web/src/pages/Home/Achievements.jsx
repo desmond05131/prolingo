@@ -7,8 +7,8 @@ import "../../styles/Achievements.css"; // custom scroll styling similar to lead
 import AchievementRow from "@/components/achievement/AchievementRow";
 import LoadingIndicator from "@/components/LoadingIndicator";
 import { listAchievements, claimAchievement } from "@/client-api";
-import { useStatsState } from "@/components/Stats/useStatsState.jsx";
 import { useBoundStore } from "@/stores/stores";
+import { refreshStats } from "@/stores/stores";
 import { useToast } from "@/hooks/use-toast";
 
 function AchievementsHome() {
@@ -17,7 +17,8 @@ function AchievementsHome() {
   const [error, setError] = useState(null);
   const [claimingMap, setClaimingMap] = useState({}); // { [achievement_id]: true }
   // Pull user stats and completed tests for progress computation
-  const { xp: userXp, streak: userStreak } = useStatsState();
+  const userXp = useBoundStore((s) => s.xp);
+  const userStreak = useBoundStore((s) => s.streak);
   const completedTestIds = useBoundStore((s) => s.completedTestIds);
   const { toast } = useToast();
 
@@ -59,7 +60,7 @@ function AchievementsHome() {
 
       // Reward string formatting
       if (it.reward_type === "badge") {
-        reward = `Badge: ${it.reward_content || "Special"}`;
+        reward = `Badge: ${it.reward_content_description}`;
       } else if (it.reward_type === "xp") {
         reward = `+${it.reward_amount ?? 0} XP`;
       } else if (it.reward_type === "energy") {
@@ -146,6 +147,8 @@ function AchievementsHome() {
     try {
       await claimAchievement(achievementId);
       toast.success?.("Reward claimed!") || toast("Reward claimed!");
+      // Refresh top-right stats (xp/energy/streak/level) after claiming
+      refreshStats?.();
       // Reload list to reflect claim state and any updated balances
       const abort = new AbortController();
       const data = await listAchievements(abort.signal);

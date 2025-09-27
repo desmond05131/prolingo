@@ -26,6 +26,7 @@ import ProfileHome from "./pages/Home/Profile"
 import AttemptTest from "./pages/Learn/AttemptTest"
 import TestResult from "./pages/Learn/TestResult"
 import SubscriptionHome from "./pages/Home/Subscription"
+import PaymentPage from "./pages/Home/Payment"
 import AdminLayout from "./layouts/AdminLayout"
 import AdminCreateUser from "./pages/Admin/AdminCreateUser"
 import AdminListUser from "./pages/Admin/AdminListUser"
@@ -74,7 +75,8 @@ function App() {
         <Route path="/leaderboards" element={<ProtectedRoute><LeaderboardHome /></ProtectedRoute>} />
         <Route path="/achievements" element={<ProtectedRoute><AchievementsHome /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><SettingsHome /></ProtectedRoute>} />
-        <Route path="/subscription" element={<ProtectedRoute><SubscriptionHome /></ProtectedRoute>} />
+  <Route path="/subscription" element={<ProtectedRoute><SubscriptionHome /></ProtectedRoute>} />
+  <Route path="/subscription/payment" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
         <Route path="/learn" element={<ProtectedRoute><LearnHome /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><ProfileHome /></ProtectedRoute>} />
         

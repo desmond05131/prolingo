@@ -8,7 +8,7 @@ export default function ScoreCard({ correct, total, scorePercent }) {
         <span className="text-xs font-mono text-slate-300">{correct}/{total}</span>
       </div>
       <div className="h-4 w-full rounded-full bg-white/10 border border-white/15 overflow-hidden">
-        <div className="h-full bg-emerald-500 transition-all" style={{ width: `${scorePercent}%` }} />
+        <div className="h-full bg-primary-500 transition-all" style={{ width: `${scorePercent}%` }} />
       </div>
     </div>
   );

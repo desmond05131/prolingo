@@ -98,7 +98,17 @@ export const UnitSection = ({ unit }) => {
       />
       <div className="relative mb-8 mt-[67px] flex max-w-2xl flex-col items-center gap-4">
         {unit.tiles.map((tile, i) => {
-          const status = tileStatus(unit.tiles, i, completedTestIds);
+          // Prefer status provided by unit.tiles if backend supplies it; otherwise use computed
+          const status = (() => {
+            const raw = tile?.status;
+            if (typeof raw === 'string') {
+              const s = raw.trim().toLowerCase();
+              if (s === 'passed') return 'COMPLETE';
+              if (s === 'active') return 'ACTIVE';
+              if (s === 'locked') return 'LOCKED';
+            }
+            return tileStatus(unit.tiles, i, completedTestIds);
+          })();
           return (
             <div key={i}>
               {(() => {

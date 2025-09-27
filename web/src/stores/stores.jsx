@@ -3,6 +3,10 @@ import {
   listUserCourses,
   fetchClientTestsTree,
   fetchClientUserTests,
+  getMyGameInfo,
+  getMyLeaderboard,
+  getMyDailyStreak,
+  useStreakSaver as postUseStreakSaver,
 } from "@/client-api";
 
 export const useBoundStore = create(() => ({
@@ -22,6 +26,22 @@ export const useBoundStore = create(() => ({
   coursesLoading: false,
   learnLoading: false,
   coursesLoaded: false,
+
+  // Global player stats (shared across app)
+  statsLoading: false,
+  statsLoaded: false,
+  statsError: null,
+  level: 1,
+  xp: 0,
+  energy: 100,
+  nextLevelProgressPct: 0,
+  nextLevelXP: 0,
+  rank: null,
+  streak: 0,
+  streakDays: [], // [{ daily_streak_date, is_streak_saver }]
+  streakSaversLeft: 0,
+  timeToMaxEnergySeconds: null,
+  username: '',
 }));
 
 export const setUnits = (units) => {
@@ -151,5 +171,80 @@ export const loadLearnUnitsForCourse = async (courseId, signal) => {
     });
   } finally {
     useBoundStore.setState({ learnLoading: false });
+  }
+};
+
+// Centralized: refresh global player stats
+export const refreshStats = async (signal) => {
+  useBoundStore.setState({ statsLoading: true, statsError: null });
+  const controller = new AbortController();
+  const abortSignal = signal || controller.signal;
+  try {
+    const [gameinfo, lb, ds] = await Promise.all([
+      getMyGameInfo(abortSignal),
+      getMyLeaderboard(abortSignal).catch(() => null),
+      getMyDailyStreak(abortSignal).catch(() => null),
+    ]);
+
+    const next = {};
+    if (gameinfo) {
+      next.level = Number(gameinfo.level ?? 1);
+      next.xp = Number(gameinfo.xp_value ?? 0);
+      next.energy = Number(gameinfo.energy_value ?? 0);
+      next.nextLevelXP = Number(gameinfo.next_level_xp ?? 0);
+      next.nextLevelProgressPct = Number(gameinfo.next_level_progress_pct ?? 0);
+      const t = gameinfo.time_to_max_energy_seconds;
+      next.timeToMaxEnergySeconds =
+        t === null || t === undefined ? null : typeof t === "number" ? t : Number(t) || 0;
+    }
+
+    if (lb && typeof lb.rank !== "undefined") {
+      next.rank = lb.rank;
+      next.username = lb.username || '';
+    } else {
+      next.rank = null;
+    }
+
+    if (ds) {
+      next.streak = Number(ds.streak_count ?? 0);
+      next.streakDays = Array.isArray(ds.streak_days) ? ds.streak_days : [];
+      next.streakSaversLeft = Number(ds.streak_saver_left_this_month ?? 0);
+    } else {
+      next.streak = 0;
+      next.streakDays = [];
+      next.streakSaversLeft = 0;
+    }
+
+    useBoundStore.setState({ ...next, statsLoaded: true });
+  } catch (e) {
+    useBoundStore.setState({ statsError: e?.message || "Failed to load stats" });
+  } finally {
+    useBoundStore.setState({ statsLoading: false });
+    // Do not abort if external signal was passed
+    if (!signal) controller.abort();
+  }
+};
+
+// Action: use a streak saver and refresh only the streak bits
+export const useStreakSaver = async (date) => {
+  // Normalize input to 'YYYY-MM-DD'
+  let d = date;
+  if (date instanceof Date) {
+    d = date.toISOString().slice(0, 10);
+  } else if (typeof date === "string" && date.length > 10) {
+    d = date.slice(0, 10);
+  }
+  await postUseStreakSaver(d);
+  try {
+    const ds = await getMyDailyStreak();
+    if (ds) {
+      useBoundStore.setState({
+        streak: Number(ds.streak_count ?? 0),
+        streakDays: Array.isArray(ds.streak_days) ? ds.streak_days : [],
+        streakSaversLeft: Number(ds.daily_streaks_left_this_month ?? 0),
+      });
+    }
+  } catch {
+    // ignore
   }
 };

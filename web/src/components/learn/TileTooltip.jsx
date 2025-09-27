@@ -115,10 +115,10 @@ export const TileTooltip = ({
           </button>
         ) : (
           <Link
-            to="/lesson"
+            to={`/attempt-test/${selectedTileInfo?.test_id}`}
             className="flex w-full items-center justify-center rounded-xl border-b-4 border-yellow-200 bg-white p-3 uppercase text-yellow-400"
           >
-            Practice +5 XP
+            Practice
           </Link>
         )}
       </div>

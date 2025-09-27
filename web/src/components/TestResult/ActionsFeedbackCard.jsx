@@ -7,7 +7,7 @@ export default function ActionsFeedbackCard({ onRetry, onExit, onFeedback }) {
         <button
           type="button"
           onClick={onRetry}
-          className="w-full py-4 rounded-lg bg-indigo-600 hover:bg-indigo-500 active:translate-y-[2px] font-semibold tracking-wide text-white shadow"
+          className="w-full py-4 rounded-lg bg-primary-600 hover:bg-primary-500 active:translate-y-[2px] font-semibold tracking-wide text-white shadow"
         >
           Try Again
         </button>
@@ -24,7 +24,7 @@ export default function ActionsFeedbackCard({ onRetry, onExit, onFeedback }) {
         <button
           type="button"
           onClick={onFeedback}
-          className="px-5 py-2 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold active:translate-y-[2px] w-fit"
+          className="px-5 py-2 rounded-md bg-primary-600 hover:bg-primary-500 text-white text-sm font-semibold active:translate-y-[2px] w-fit"
         >
           Go
         </button>

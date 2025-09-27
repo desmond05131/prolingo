@@ -145,7 +145,7 @@ export default function AdminCourses() {
       toast.error(err?.message || 'Failed to save course');
       throw err;
     }
-  }, [toast]);
+  }, [toast, loadTests]);
 
   const handleSaveChapter = useCallback(async (updated) => {
     try {
@@ -163,7 +163,7 @@ export default function AdminCourses() {
       toast.error(err?.message || 'Failed to save chapter');
       throw err;
     }
-  }, [toast]);
+  }, [toast, loadTests]);
 
   const columns = useMemo(() => [
     columnHelper.accessor('course.course_id', { header: 'Course ID', sortingFn: 'alphanumeric' }),
@@ -179,12 +179,19 @@ export default function AdminCourses() {
     columnHelper.display({
       id: 'q_manage', header: 'Questions', cell: info => {
         const record = info.row.original;
+        const testId = record?.test?.test_id ?? record?.test_id;
         return (
           <div className="flex flex-col">
-            <AdminActionButton onClick={async () => {
-              await loadQuestions(record.test_id);
-              setQuestionsModalTest(record);
-            }}>Manage Questions</AdminActionButton>
+            <AdminActionButton
+              disabled={!testId}
+              onClick={async () => {
+                if (!testId) return;
+                await loadQuestions(testId);
+                setQuestionsModalTest(record);
+              }}
+            >
+              Manage Questions
+            </AdminActionButton>
           </div>
         );
       }, enableSorting: false
@@ -192,14 +199,35 @@ export default function AdminCourses() {
     columnHelper.display({
       id: 'actions', header: 'Actions', cell: info => {
         const record = info.row.original;
+        const testId = record?.test?.test_id ?? record?.test_id;
         return (
           <div className="flex gap-1">
-            <AdminActionButton variant="outline" onClick={() => setActiveTest(record)}>Modify</AdminActionButton>
+            <AdminActionButton
+              variant="outline"
+              onClick={() => record?.course && setActiveCourse(record.course)}
+              disabled={!record?.course?.course_id}
+            >
+              Modify Course
+            </AdminActionButton>
+            <AdminActionButton
+              variant="outline"
+              onClick={() => record?.chapter && setActiveChapter(record.chapter)}
+              disabled={!record?.chapter?.chapter_id}
+            >
+              Modify Chapter
+            </AdminActionButton>
+            <AdminActionButton
+              variant="outline"
+              onClick={() => setActiveTest(record)}
+              disabled={!testId}
+            >
+              Modify Test
+            </AdminActionButton>
             <AdminActionButton variant="destructive" onClick={async () => {
-              if (!record.test_id) return;
+              if (!testId) return;
               if (!window.confirm('Delete this test?')) return;
               try {
-                await deleteAdminTest(record.test_id);
+                await deleteAdminTest(testId);
                 toast.success('Test deleted.');
                 await loadTests();
               } catch (err) {
