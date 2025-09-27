@@ -8,6 +8,10 @@ class UserTest(models.Model):
     test = models.ForeignKey("courses.Test", on_delete=models.CASCADE, related_name="user_tests")
     attempt_date = models.DateTimeField(auto_now_add=True)
     time_spent = models.PositiveIntegerField(help_text="Time spent in seconds")
+    # Number of correct answers given in this test submission
+    correct_answer_count = models.PositiveIntegerField(default=0)
+    # Percentage score (0-100) based on correct answers / total questions
+    score_count = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
         ordering = ["-user_test_id"]

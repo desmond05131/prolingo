@@ -23,12 +23,13 @@ class UserGameInfos(models.Model):
 
     def add_xp(self, amount: int):
         if amount < 0:
-            return
+            return 0
         # Apply premium XP boost multiplier
         multiplier = get_xp_boost_multiplier_for_user(self.user)
         boosted = int(round(amount * multiplier))
         self.xp_value += boosted
         self.save(update_fields=["xp_value"])
+        return boosted
 
     def decrement_energy(self, amount: int = 1):
         if amount < 0:

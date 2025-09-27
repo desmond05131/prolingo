@@ -9,5 +9,7 @@ class ClientUserTestSerializer(serializers.ModelSerializer):
             "test_id",
             "attempt_date",
             "time_spent",
+            "correct_answer_count",
+            "score_count",
         ]
         read_only_fields = fields

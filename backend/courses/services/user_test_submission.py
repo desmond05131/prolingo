@@ -7,6 +7,12 @@ from django.db import transaction
 from django.utils import timezone
 
 from courses.models import Test, Question, UserTest, UserTestAnswer
+from common.constants import (
+    XP_AWARD_PER_TEST,
+    XP_AWARD_PER_PRACTICE,
+    ENERGY_COST_PER_TEST,
+    ENERGY_COST_PER_PRACTICE,
+)
 from gameinfo.models import UserGameInfos
 from streaks.models import DailyStreak
 
@@ -60,6 +66,9 @@ def submit_user_test(
     if not test:
         raise ValueError("Invalid test_id or test not active")
 
+    # First attempt vs practice (redo): if user already has any submission for this test, treat as practice
+    is_practice = UserTest.objects.filter(user=user, test_id=test_id).exists()
+
     # Fetch questions for the test
     questions = (
         Question.objects.filter(test_id=test_id)
@@ -88,7 +97,7 @@ def submit_user_test(
             correct_count += 1
         prepared.append((qid, given, is_correct))
 
-    # Create the user test first
+    # Create the user test first (we'll update with scoring fields below)
     user_test = UserTest.objects.create(user=user, test=test, time_spent=max(0, int(duration or 0)))
 
     # Persist answers (model doesn't store question reference; store text + correctness only)
@@ -111,19 +120,34 @@ def submit_user_test(
         gameinfo.apply_passive_energy_regen()
     except Exception:
         pass
-    energy_spent = 1
+    # Spend energy according to attempt type
+    energy_spent = ENERGY_COST_PER_PRACTICE if is_practice else ENERGY_COST_PER_TEST
     try:
         gameinfo.decrement_energy(energy_spent)
     except Exception:
         pass
 
-    base_xp_per_correct = 10
-    xp_awarded = base_xp_per_correct * correct_count
-    if xp_awarded > 0:
+    # Award XP according to attempt type
+    xp_awarded = XP_AWARD_PER_PRACTICE if is_practice else XP_AWARD_PER_TEST
+    if xp_awarded:
         try:
-            gameinfo.add_xp(xp_awarded)
+            xp_awarded = gameinfo.add_xp(xp_awarded)
         except Exception:
             pass
+
+    # Update scoring fields on the created user_test
+    # Use total number of questions in the test for percentage; avoid division by zero
+    percentage = 0
+    if total_questions > 0:
+        percentage = int(round((correct_count / total_questions) * 100))
+    # Persist computed fields
+    UserTest.objects.filter(pk=user_test.pk).update(
+        correct_answer_count=correct_count,
+        score_count=percentage,
+    )
+    # Refresh instance values
+    user_test.correct_answer_count = correct_count
+    user_test.score_count = percentage
 
     return SubmissionResult(
         user_test=user_test,

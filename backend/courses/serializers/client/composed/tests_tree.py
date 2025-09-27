@@ -20,3 +20,5 @@ class ClientTestsFlatItemSerializer(serializers.Serializer):
     course = ClientCourseSerializer()
     chapter = ClientChapterSerializer(allow_null=True)
     test = ClientTestSlimSerializer(allow_null=True)
+    # Status of the test for the user: one of "passed", "active", "locked"; null when no test
+    status = serializers.CharField(allow_null=True, required=False)
