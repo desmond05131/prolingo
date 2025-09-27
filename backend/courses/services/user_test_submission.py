@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import datetime
 from typing import Iterable, List
 
 from django.db import transaction
@@ -110,7 +111,8 @@ def submit_user_test(
         uta_list = list(UserTestAnswer.objects.filter(user_test=user_test).order_by("user_test_answer_id"))
 
     # Daily streak: ensure today is marked
-    today = timezone.localdate()
+    today = datetime.date.today()
+    print(today)
     _, streak_created = DailyStreak.objects.get_or_create(user=user, daily_streak_date=today)
 
     # Energy and XP updates

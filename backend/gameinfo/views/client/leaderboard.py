@@ -52,6 +52,7 @@ class MyLeaderboardRankView(generics.GenericAPIView):
         rank = top50_user_ids.index(request.user.id) + 1        
 
         payload = CurrentUserRankSerializer.from_gameinfo_with_rank(gi, rank)
+        # print(payload)
         ser = CurrentUserRankSerializer(data=payload)
         ser.is_valid(raise_exception=True)
         return response.Response(ser.data)
