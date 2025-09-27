@@ -8,7 +8,7 @@ from achievements.views.client import (
 urlpatterns = [
     path("achievements/", ClientListAchievementsView.as_view(), name="client_achievement_list"),
     path(
-        "claimed-achievements/",
+        "user-claimed-achievements/",
         ClientListUserClaimedAchievementsView.as_view(),
         name="client_user_claimed_achievement_list",
     ),

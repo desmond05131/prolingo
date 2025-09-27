@@ -29,9 +29,26 @@ class ClientMyDailyStreaksView(generics.ListAPIView):
         # Compute current streak ending today
         streak_count = compute_current_streak(request.user)
 
+        # Compute usable streak saver left for this month
+        today = timezone.now().date()
+        year, month = today.year, today.month
+        start_of_month = date(year, month, 1)
+        end_of_month = date(year, month, monthrange(year, month)[1])
+        used_streak_savers = (
+            DailyStreak.objects.filter(
+                user=request.user,
+                is_streak_saver=True,
+                daily_streak_date__gte=start_of_month,
+                daily_streak_date__lte=end_of_month,
+            ).count()
+        )
+        monthly_limit = get_streak_saver_limit_for_user(request.user)
+        streak_saver_left_this_month = max(0, monthly_limit - used_streak_savers)
+
         payload = {
             "streak_count": streak_count,
             "streak_days": data,
+            "streak_saver_left_this_month": streak_saver_left_this_month,
         }
 
         if page is not None:

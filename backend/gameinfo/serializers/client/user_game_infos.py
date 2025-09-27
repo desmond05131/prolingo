@@ -1,4 +1,7 @@
 from rest_framework import serializers
+from django.utils import timezone
+import math
+from common import ENERGY_MAX, get_regen_interval_for_user
 from ...models import UserGameInfos
 from ...utils import compute_level_from_total_xp, get_level_up_xp
 
@@ -7,6 +10,7 @@ class ClientUserGameInfosSerializer(serializers.ModelSerializer):
     level = serializers.SerializerMethodField()
     next_level_xp = serializers.SerializerMethodField()
     next_level_progress_pct = serializers.SerializerMethodField()
+    time_to_max_energy_seconds = serializers.SerializerMethodField()
 
     class Meta:
         model = UserGameInfos
@@ -19,6 +23,7 @@ class ClientUserGameInfosSerializer(serializers.ModelSerializer):
             "level",
             "next_level_xp",
             "next_level_progress_pct",
+            "time_to_max_energy_seconds",
         ]
         read_only_fields = [
             "gameinfo_id",
@@ -26,6 +31,7 @@ class ClientUserGameInfosSerializer(serializers.ModelSerializer):
             "level",
             "next_level_xp",
             "next_level_progress_pct",
+            "time_to_max_energy_seconds",
         ]
 
     def get_level(self, obj: UserGameInfos) -> int:
@@ -70,3 +76,40 @@ class ClientUserGameInfosSerializer(serializers.ModelSerializer):
         if pct > 100:
             return 100
         return pct
+
+    def get_time_to_max_energy_seconds(self, obj: UserGameInfos) -> int:
+        """Seconds remaining until the user's energy reaches the cap (ENERGY_MAX).
+
+        - Uses the per-user regeneration interval (premium-aware).
+        - Respects the last updated timestamp to account for partial progress to the next tick.
+        - Returns 0 if already at or above the cap.
+        """
+        # If there's no cap configured, treat as already full from a client's perspective
+        if ENERGY_MAX is None:
+            return 0
+
+        current_energy = int(getattr(obj, "energy_value", 0) or 0)
+        missing = ENERGY_MAX - current_energy
+        if missing <= 0:
+            return 0
+
+        interval = get_regen_interval_for_user(obj.user)
+        # Guard against misconfiguration
+        total_interval_seconds = max(0.0, interval.total_seconds())
+        if total_interval_seconds <= 0.0:
+            # No regeneration possible
+            return 0
+
+        last_updated = getattr(obj, "energy_last_updated_date", None) or timezone.now()
+        now = timezone.now()
+        elapsed = now - last_updated
+
+        # Time remaining to the next regen tick. If elapsed >= interval (e.g., if
+        # passive regen wasn't applied yet), modulo handles partial alignment.
+        remainder = elapsed % interval if elapsed.total_seconds() > 0 else elapsed
+        to_next_tick = interval - remainder if remainder < interval else interval
+
+        # Total time = time to next tick + (missing - 1) full intervals
+        total_seconds = to_next_tick.total_seconds() + max(0, missing - 1) * total_interval_seconds
+        # Ceil to whole seconds so clients can down-count cleanly
+        return int(max(0, math.ceil(total_seconds)))

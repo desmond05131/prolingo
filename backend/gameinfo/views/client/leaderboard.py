@@ -6,6 +6,7 @@ from gameinfo.serializers.client.leaderboard import (
     CurrentUserRankSerializer,
 )
 from gameinfo.utils import compute_level_from_total_xp
+from django.db.models import Q
 
 
 class Top50LeaderboardView(generics.GenericAPIView):
@@ -27,6 +28,7 @@ class Top50LeaderboardView(generics.GenericAPIView):
                     "username": getattr(gi.user, "username", ""),
                     "xp_value": gi.xp_value,
                     "level": compute_level_from_total_xp(gi.xp_value),
+                    "profile_icon": getattr(gi.user, "profile_icon", None),
                 }
             )
 
@@ -41,28 +43,13 @@ class MyLeaderboardRankView(generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         gi, _ = UserGameInfos.objects.select_related("user").get_or_create(user=request.user)
 
-        # Compute rank efficiently: count records with strictly higher xp, then tie-breakers
-        # Rank is 1 + number of users strictly ahead by ordering tuple (-xp, -energy, id)
-        ahead_count = UserGameInfos.objects.filter(
-            # Higher XP first
-            xp_value__gt=gi.xp_value
-        ).count()
+        # Try to find the user's position within the Top 50 ranking
+        top50_user_ids = list(
+            UserGameInfos.objects.order_by("-xp_value", "-energy_value", "gameinfo_id")
+            .values_list("user_id", flat=True)
+        )
 
-        # For equal XP, those with higher energy come first
-        ahead_ties_energy = UserGameInfos.objects.filter(
-            xp_value=gi.xp_value,
-            energy_value__gt=gi.energy_value,
-        ).count()
-
-        # For exact XP and energy, smaller gameinfo_id should come first? Our ordering is by id ascending after energy desc.
-        # Since we order by -xp, -energy, id (ascending), any rows with same xp and energy and smaller id are ahead.
-        ahead_ties_id = UserGameInfos.objects.filter(
-            xp_value=gi.xp_value,
-            energy_value=gi.energy_value,
-            gameinfo_id__lt=gi.gameinfo_id,
-        ).count()
-
-        rank = 1 + ahead_count + ahead_ties_energy + ahead_ties_id
+        rank = top50_user_ids.index(request.user.id) + 1        
 
         payload = CurrentUserRankSerializer.from_gameinfo_with_rank(gi, rank)
         ser = CurrentUserRankSerializer(data=payload)

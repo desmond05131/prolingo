@@ -4,6 +4,9 @@ from gameinfo.models import UserGameInfos
 
 
 class UserSerializer(serializers.ModelSerializer):
+    # Require users to supply their current password when changing it via update
+    current_password = serializers.CharField(write_only=True, required=False, allow_blank=False)
+
     class Meta:
         model = User
         fields = [
@@ -11,6 +14,7 @@ class UserSerializer(serializers.ModelSerializer):
             "username",
             "email",
             "password",
+            "current_password",
             "profile_icon",
             "role",
             "registration_date",
@@ -31,11 +35,29 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
     def update(self, instance, validated_data):
+        # Extract non-model extra field first to avoid setattr
+        current_password = validated_data.pop("current_password", None)
         password = validated_data.pop("password", None)
+
+        # Update regular fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-        if password:
+
+        # Handle password change with verification of current password
+        if password is not None:
+            # If the user has a usable password, require verifying it
+            if instance.has_usable_password():
+                if not current_password:
+                    raise serializers.ValidationError({
+                        "current_password": "This field is required to change the password.",
+                    })
+                if not instance.check_password(current_password):
+                    raise serializers.ValidationError({
+                        "current_password": "Incorrect current password.",
+                    })
+            # Set the new password
             instance.set_password(password)
+
         instance.save()
         return instance
 

@@ -9,6 +9,7 @@ class LeaderboardEntrySerializer(serializers.Serializer):
     username = serializers.CharField()
     xp_value = serializers.IntegerField()
     level = serializers.IntegerField()
+    profile_icon = serializers.CharField(allow_blank=True, allow_null=True, required=False)
 
 
 class CurrentUserRankSerializer(serializers.Serializer):
