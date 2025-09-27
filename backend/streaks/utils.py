@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from traceback import print_list
 from django.utils import timezone
 from django.db.models import QuerySet
 
@@ -27,7 +28,7 @@ def compute_current_streak(user) -> int:
 	"""
 	today = timezone.now().date()
 	streak = 0
-	expected = today
+	expected = today - timedelta(days=1)
 	for ds in _dates_for_user(user):
 		d = ds.daily_streak_date
 		if d == expected:
