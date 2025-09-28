@@ -1,41 +1,20 @@
-import { useState, useEffect } from "react";
-import api from "../../api"
+import { useBoundStore, refreshStats, useStreakSaver as storeUseStreakSaver } from "@/stores/stores";
 
-
+// Obsolete: prefer importing values/actions directly from the zustand store.
+// This wrapper remains for compatibility with any leftover imports.
 export function useStatsState() {
-    const [level, setLevel] = useState(1);
-    const [xp, setXp] = useState(0);
-    const [streak, setStreak] = useState( 0);
-    const [energy, setEnergy] = useState(100);
-
-    useEffect(() => {
-        getStats();
-    }, []);
-
-    const getStats = () => {
-        api
-            .get("/api/stats/")
-            .then((res) => res.data)
-            .then((data) => {
-                const stats = Array.isArray(data) ? data[0] : data;
-                console.log(stats);
-
-                if (!stats) {
-                    return
-                }
-
-                setLevel(stats.level || 1);
-                setXp(stats.xp || 0);
-                setStreak(stats.streak || 0);
-                setEnergy(stats.energy || 10);
-            })
-            .catch((err) => alert(err));
-    };
-
-    return {
-        level,
-        xp,
-        streak,
-        energy,
-    };
+  const state = useBoundStore((s) => ({
+    level: s.level,
+    xp: s.xp,
+    streak: s.streak,
+    energy: s.energy,
+    nextLevelProgressPct: s.nextLevelProgressPct,
+    rank: s.rank,
+    loading: s.statsLoading,
+    error: s.statsError,
+    streakDays: s.streakDays,
+    streakSaversLeft: s.streakSaversLeft,
+    timeToMaxEnergySeconds: s.timeToMaxEnergySeconds,
+  }));
+  return { ...state, applyStreakSaver: storeUseStreakSaver, refreshStats };
 }

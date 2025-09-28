@@ -1,7 +1,7 @@
 
 body {
   background-color: #141B1F;
-  color: #fff; /* Optional: makes text readable on dark background */
+  /* color: #fff; Optional: makes text readable on dark background */
 }
 
 /* Container for the whole page */
@@ -30,12 +30,12 @@ div {
 
 /* Styles for the form section */
 form {
-  background-color: #fff;
-  padding: 20px;
+  /* background-color: #fff; */
+  /* padding: 20px; */
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  max-width: 500px;
-  margin: auto;
+  /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
+  /* max-width: 500px; */
+  /* margin: auto; */
 }
 
 form h2 {
@@ -53,7 +53,7 @@ form input,
 form textarea {
   width: 100%;
   padding: 8px;
-  margin: 8px 0 16px;
+  /* margin: 8px 0 16px; */
   border: 1px solid #ccc;
   border-radius: 4px;
   box-sizing: border-box;

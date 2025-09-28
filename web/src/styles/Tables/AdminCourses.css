@@ -1,0 +1,4 @@
+/* Minimal adjustments for nested tables in AdminCourses */
+.admin-courses .nested-section {
+  margin-top: 0.75rem;
+}
